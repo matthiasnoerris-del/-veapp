@@ -4,49 +4,137 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ØveApp</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-body { font-family:'Inter',sans-serif; background:#f9fafb; margin:0; padding:12px; }
-h1 { text-align:center; margin-bottom:12px; }
-button { cursor:pointer; padding:10px 20px; border:none; border-radius:10px; margin:5px; font-weight:500; }
-#calendar { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:12px; }
-.day { background:white; border-radius:14px; padding:12px; box-shadow:0 6px 16px rgba(0,0,0,0.08); }
-.day-title { font-weight:700; margin-bottom:6px; }
-.day-note { font-size:13px; color:#6b7280; font-style:italic; margin-bottom:6px; }
-.session { background:#e0e7ff; border:none; border-radius:10px; padding:8px; width:100%; text-align:left; margin-bottom:6px; font-weight:500; }
-.session.done { background:#dcfce7; text-decoration:line-through; color:#065f46; }
-#totalBar { background:#e5e7eb; border-radius:14px; overflow:hidden; margin-top:16px; }
-#totalFill { background:linear-gradient(90deg,#4ade80,#22c55e); color:#064e3b; font-weight:700; padding:10px; width:0%; text-align:center; transition:0.3s; }
-canvas { margin-top:24px; background:white; border-radius:14px; padding:14px; }
-#startScreen, #monthScreen, #materialScreen { display:flex; flex-direction:column; align-items:center; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f9fafb;
+  margin: 0;
+  padding: 12px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+button {
+  cursor: pointer;
+}
+
+#screenStart, #screenMonth, #screenMaterial {
+  display: none;
+}
+
+.activeScreen {
+  display: block;
+}
+
+.screen-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.day {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  margin-bottom: 12px;
+}
+
+.day-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.day-note {
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+  margin-bottom: 6px;
+}
+
+.session {
+  background: #e0e7ff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.session.done {
+  background: #dcfce7;
+  text-decoration: line-through;
+  color: #065f46;
+}
+
+#totalBar {
+  background: #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+#totalFill {
+  background: linear-gradient(90deg,#4ade80,#22c55e);
+  color: #064e3b;
+  font-weight: 700;
+  padding: 10px;
+  width: 0%;
+  text-align: center;
+  transition: 0.3s;
+}
+
+canvas {
+  margin-top: 24px;
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+}
 </style>
 </head>
+
 <body>
 
 <h1>ØveApp</h1>
 
-<div id="startScreen">
-  <button id="btnJanuar">Januar 2026</button>
-  <button id="btnMaterial">Øve-materiale</button>
+<!-- START SCREEN -->
+<div id="screenStart" class="activeScreen">
+  <div class="screen-buttons">
+    <button id="btnJanuar">Januar 2026</button>
+    <button id="btnMaterial">Øve-materiale</button>
+  </div>
 </div>
 
-<div id="monthScreen" style="display:none; width:100%;">
-  <button onclick="backToStart()">Tilbage</button>
+<!-- MONTH SCREEN -->
+<div id="screenMonth">
+  <button onclick="goStart()">← Tilbage</button>
+  <h2>Januar 2026</h2>
   <div id="calendar"></div>
-  <canvas id="progressChart" height="220"></canvas>
   <div id="totalBar"><div id="totalFill">0 timer</div></div>
+  <canvas id="progressChart" height="220"></canvas>
 </div>
 
-<div id="materialScreen" style="display:none; width:100%;">
-  <button onclick="backToStart()">Tilbage</button>
-  <div id="materialList" style="width:100%; text-align:left;"></div>
+<!-- MATERIAL SCREEN -->
+<div id="screenMaterial">
+  <button onclick="goStart()">← Tilbage</button>
+  <h2>Øve-materiale</h2>
+  <div id="materialList"></div>
 </div>
 
 <script>
-// DATA
-const instruments=["Orgel","Trommer","Klaver"];
-const schedule={
+// ---------------- DATA ----------------
+const instruments = ["Orgel","Trommer","Klaver"];
+const schedule = {
 "2026-01-01":{note:"",sessions:[["7–8","Orgel"],["11–12","Trommer"],["11:30–12:30","Trommer"],["13–14","Klaver"]]},
 "2026-01-02":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
 "2026-01-03":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
@@ -80,85 +168,124 @@ const schedule={
 "2026-01-31":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]}
 };
 
-// STATE
-let done=JSON.parse(localStorage.getItem("done")||"{}");
-let materialLog=JSON.parse(localStorage.getItem("materialLog")||[]);
+// ---------------- STATE ----------------
+let done = JSON.parse(localStorage.getItem("done") || "{}");
+let materials = JSON.parse(localStorage.getItem("materials") || "{}");
 
-// FUNCTIONS
-function save(){ localStorage.setItem("done",JSON.stringify(done)); localStorage.setItem("materialLog",JSON.stringify(materialLog)); }
-function totalHours(){ return Object.values(done).filter(v=>v).length; }
-function updateTotal(){ const t=totalHours(); const bar=document.getElementById("totalFill"); bar.textContent=t+" timer"; bar.style.width=Math.min(t*3,100)+"%"; }
+// ---------------- FUNCTIONS ----------------
+function save(){ 
+  localStorage.setItem("done",JSON.stringify(done));
+  localStorage.setItem("materials",JSON.stringify(materials));
+}
+
+function totalHours(){
+  return Object.values(done).filter(v=>v).length;
+}
+
+function updateTotal(){
+  const t = totalHours();
+  const bar = document.getElementById("totalFill");
+  bar.textContent = t + " timer";
+  bar.style.width = Math.min(t*4,100)+"%";
+}
+
+// ---------------- SCREEN FUNCTIONS ----------------
+function goStart(){
+  document.getElementById("screenStart").classList.add("activeScreen");
+  document.getElementById("screenMonth").classList.remove("activeScreen");
+  document.getElementById("screenMaterial").classList.remove("activeScreen");
+}
 
 function renderMonth(){
-  document.getElementById("startScreen").style.display="none";
-  document.getElementById("materialScreen").style.display="none";
-  document.getElementById("monthScreen").style.display="flex";
+  document.getElementById("screenStart").classList.remove("activeScreen");
+  document.getElementById("screenMonth").classList.add("activeScreen");
+  renderCalendar();
+}
 
-  const cal=document.getElementById("calendar");
-  cal.innerHTML="";
+function showMaterial(){
+  document.getElementById("screenStart").classList.remove("activeScreen");
+  document.getElementById("screenMaterial").classList.add("activeScreen");
+  renderMaterial();
+}
 
+// ---------------- CALENDAR ----------------
+function renderCalendar(){
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
   Object.keys(schedule).forEach(date=>{
-    const d=schedule[date];
-    const box=document.createElement("div"); box.className="day";
-    box.innerHTML=`<div class="day-title">${date}</div>`+(d.note?`<div class="day-note">${d.note}</div>`:"");
-
+    const d = schedule[date];
+    const box = document.createElement("div");
+    box.className = "day";
+    box.innerHTML = `<div class="day-title">${date}</div>`;
+    if(d.note) box.innerHTML += `<div class="day-note">${d.note}</div>`;
     d.sessions.forEach((s,i)=>{
-      const id=date+"-"+i;
-      const b=document.createElement("button");
-      b.className="session"+(done[id]?" done":"");
-      b.textContent=`${s[0]} – ${s[1]}`;
-      b.onclick=()=>{
-        if(!done[id]){
-          let mat=prompt(`Hvilket materiale for ${s[1]}?`);
-          if(mat) materialLog.push({date:date,instrument:s[1],material:mat});
+      const id = date+"-"+i;
+      const b = document.createElement("button");
+      b.className = "session"+(done[id]?" done":"");
+      b.textContent = `${s[0]} – ${s[1]}`;
+      b.onclick = ()=>{
+        done[id] = !done[id];
+        const mat = prompt("Hvilket materiale har du øvet på?");
+        if(mat){
+          if(!materials[mat]) materials[mat]=[];
+          if(!materials[mat].includes(date)) materials[mat].push(date);
         }
-        done[id]=!done[id]; save(); renderMonth();
+        save();
+        renderCalendar();
+        updateTotal();
+        updateChart();
       };
       box.appendChild(b);
     });
     cal.appendChild(box);
   });
-  updateTotal();
-  updateChart();
 }
 
+// ---------------- MATERIAL ----------------
+function renderMaterial(){
+  const container = document.getElementById("materialList");
+  container.innerHTML="";
+  for(const mat in materials){
+    const days = materials[mat].join(", ");
+    const t = materials[mat].length;
+    const div = document.createElement("div");
+    div.textContent = `${mat} – ${t} timer – Dage: ${days}`;
+    container.appendChild(div);
+  }
+}
+
+// ---------------- CHART ----------------
 let chart;
 function updateChart(){
-  const labels=Object.keys(schedule);
-  const data=instruments.map(inst=>labels.map(d=>schedule[d].sessions.filter((_,i)=>done[d+"-"+i]&&schedule[d].sessions[i][1]===inst).length));
+  const labels = Object.keys(schedule);
+  const data = instruments.map(inst =>
+    labels.map(d =>
+      schedule[d].sessions.filter((_,i)=>done[d+"-"+i] && schedule[d].sessions[i][1]===inst).length
+    )
+  );
+
   if(chart) chart.destroy();
-  chart=new Chart(document.getElementById("progressChart"),{
+  chart = new Chart(document.getElementById("progressChart"),{
     type:"line",
-    data:{ labels, datasets:instruments.map((i,idx)=>({label:i,data:data[idx],tension:0.25})) },
-    options:{ scales:{ y:{ beginAtZero:true } } }
+    data:{
+      labels,
+      datasets: instruments.map((i,idx)=>({
+        label:i,
+        data:data[idx],
+        tension:0.25
+      }))
+    },
+    options:{scales:{y:{beginAtZero:true}}}
   });
 }
 
-function showMaterial(){
-  document.getElementById("startScreen").style.display="none";
-  document.getElementById("monthScreen").style.display="none";
-  document.getElementById("materialScreen").style.display="flex";
-
-  const list=document.getElementById("materialList");
-  list.innerHTML="";
-  materialLog.forEach(m=>{
-    const div=document.createElement("div"); div.textContent=`${m.date} – ${m.instrument} – ${m.material}`; list.appendChild(div);
-  });
-}
-
-function backToStart(){
-  document.getElementById("startScreen").style.display="flex";
-  document.getElementById("monthScreen").style.display="none";
-  document.getElementById("materialScreen").style.display="none";
-}
-
-// HOOK BUTTONS
-document.getElementById("btnJanuar").onclick=()=>renderMonth();
-document.getElementById("btnMaterial").onclick=()=>showMaterial();
-
-// INIT
-updateTotal();
+// ---------------- INIT ----------------
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("btnJanuar").onclick = renderMonth;
+  document.getElementById("btnMaterial").onclick = showMaterial;
+  goStart();
+  updateTotal();
+});
 </script>
-
 </body>
 </html>
