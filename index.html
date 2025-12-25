@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ØveApp – 2026</title>
-
+<title>ØveApp – Januar 2026</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-
 <style>
 body {
   font-family: 'Inter', sans-serif;
@@ -15,42 +13,103 @@ body {
   margin: 0;
   padding: 12px;
 }
-h1 { text-align:center; margin-bottom:12px; }
-#monthSelect { width:100%; font-size:16px; padding:8px; margin-bottom:16px; border-radius:8px; border:1px solid #ccc; }
-#totalBar { background:#e5e7eb; border-radius:14px; overflow:hidden; margin-bottom:16px; position:fixed; bottom:12px; left:12px; right:12px; }
-#totalFill { background:linear-gradient(90deg,#4ade80,#22c55e); color:#064e3b; font-weight:700; padding:10px; width:0%; text-align:center; transition:0.3s; }
-#calendar { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:60px; }
-.day { background:white; border-radius:14px; padding:14px; box-shadow:0 6px 16px rgba(0,0,0,0.08); }
-.day-title { font-weight:700; margin-bottom:6px; }
-.day-note { font-size:13px; color:#6b7280; font-style:italic; margin-bottom:6px; }
-.session { background:#e0e7ff; border:none; border-radius:10px; padding:8px; width:100%; text-align:left; margin-bottom:6px; font-weight:500; cursor:pointer; }
-.session.done { background:#dcfce7; text-decoration:line-through; color:#065f46; }
-#materialContainer { margin-top:16px; background:white; padding:14px; border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,0.08); }
-canvas { margin-top:24px; background:white; border-radius:14px; padding:14px; }
+h1 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+  gap: 14px;
+}
+.day {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+.day-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.day-note {
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+  margin-bottom: 6px;
+}
+.session {
+  background: #e0e7ff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.session.done {
+  background: #dcfce7;
+  text-decoration: line-through;
+  color: #065f46;
+}
+#totalBar {
+  background: #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+#totalFill {
+  background: linear-gradient(90deg,#4ade80,#22c55e);
+  color: #064e3b;
+  font-weight: 700;
+  padding: 10px;
+  width: 0%;
+  text-align: center;
+  transition: 0.3s;
+}
+#materialLog {
+  margin-top: 16px;
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+canvas {
+  margin-top: 24px;
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+}
 </style>
 </head>
 
 <body>
-
-<h1>ØveApp 2026</h1>
-
+<h1>ØveApp</h1>
 <select id="monthSelect">
-  <option value="01">Januar</option>
-  <!-- senere kan du tilføje flere måneder -->
+  <option value="2026-01">Januar 2026</option>
 </select>
 
 <div id="calendar"></div>
 
-<div id="materialContainer">
-  <h3>Øve-materiale</h3>
-  <ul id="materialList"></ul>
-</div>
-
-<canvas id="progressChart" height="220"></canvas>
-
 <div id="totalBar">
   <div id="totalFill">0 timer</div>
 </div>
+
+<h3>Øve-materiale</h3>
+<div id="materialLog">Intet materiale endnu.</div>
+
+<canvas id="progressChart" height="220"></canvas>
 
 <script>
 // ---------------- DATA ----------------
@@ -92,12 +151,12 @@ const schedule = {
 
 // ---------------- STATE ----------------
 let done = JSON.parse(localStorage.getItem("done") || "{}");
-let materialData = JSON.parse(localStorage.getItem("materialData") || []);
+let materials = JSON.parse(localStorage.getItem("materials") || "[]");
 
 // ---------------- FUNCTIONS ----------------
 function save(){ 
   localStorage.setItem("done",JSON.stringify(done)); 
-  localStorage.setItem("materialData",JSON.stringify(materialData));
+  localStorage.setItem("materials",JSON.stringify(materials));
 }
 
 function totalHours(){
@@ -111,14 +170,13 @@ function updateTotal(){
   bar.style.width = Math.min(t*4,100)+"%";
 }
 
-function renderMaterial(){
-  const list = document.getElementById("materialList");
-  list.innerHTML = "";
-  materialData.forEach(item=>{
-    const li = document.createElement("li");
-    li.textContent = `${item.date}: ${item.instrument} – ${item.material} (${item.hours} time${item.hours>1?'r':''})`;
-    list.appendChild(li);
-  });
+function renderMaterials(){
+  const log = document.getElementById("materialLog");
+  if(materials.length===0){
+    log.textContent = "Intet materiale endnu.";
+  } else {
+    log.innerHTML = materials.map(m=>`${m.date} – ${m.instrument}: ${m.material} (${m.hours} time${m.hours>1?"r":""})`).join("<br>");
+  }
 }
 
 function render(){
@@ -139,22 +197,17 @@ function render(){
       b.className = "session"+(done[id]?" done":"");
       b.textContent = `${s[0]} – ${s[1]}`;
       b.onclick = ()=>{
-        if(!done[id]){
-          // hvis vi markerer som done, vælg materiale
-          const mat = prompt(`Hvilket materiale har du øvet på for ${s[1]}?`);
-          if(mat) {
-            materialData.push({date:date,instrument:s[1],material:mat,hours:1});
-            done[id] = true;
-            save();
-            render();
-          }
+        done[id] = !done[id];
+        if(done[id]){
+          const material = prompt(`Hvilket materiale har du øvet på for ${s[1]}?`);
+          if(material) materials.push({date:date,instrument:s[1],material:material,hours:1});
         } else {
-          // fjern done
-          done[id] = false;
-          materialData = materialData.filter(x=>!(x.date===date && x.instrument===s[1] && x.hours===1));
-          save();
-          render();
+          // Fjern materialet for sessionen, hvis man fjerner done
+          materials = materials.filter(m=>!(m.date===date && m.instrument===s[1] && m.hours===1));
         }
+        save();
+        render();
+        renderMaterials();
       };
       box.appendChild(b);
     });
@@ -163,10 +216,10 @@ function render(){
   });
 
   updateTotal();
-  renderMaterial();
   updateChart();
 }
 
+// ---------------- CHART ----------------
 let chart;
 function updateChart(){
   const labels = Object.keys(schedule);
@@ -192,11 +245,8 @@ function updateChart(){
 }
 
 // ---------------- INIT ----------------
-document.getElementById("monthSelect").onchange = ()=>{
-  alert("Månedsvalg er implementeret – senere kan du tilføje flere måneder.");
-};
+renderMaterials();
 render();
 </script>
-
 </body>
 </html>
