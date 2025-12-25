@@ -13,92 +13,22 @@ body {
   margin: 0;
   padding: 12px;
 }
-h1 {
-  text-align: center;
-  margin-bottom: 12px;
-}
-select {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-}
-#calendar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
-  gap: 14px;
-}
-.day {
-  background: white;
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-}
-.day-title {
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-.day-note {
-  font-size: 13px;
-  color: #6b7280;
-  font-style: italic;
-  margin-bottom: 6px;
-}
-.session {
-  background: #e0e7ff;
-  border: none;
-  border-radius: 10px;
-  padding: 8px;
-  width: 100%;
-  text-align: left;
-  margin-bottom: 6px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.session.done {
-  background: #dcfce7;
-  text-decoration: line-through;
-  color: #065f46;
-}
-#totalBar {
-  background: #e5e7eb;
-  border-radius: 14px;
-  overflow: hidden;
-  margin-top: 16px;
-}
-#totalFill {
-  background: linear-gradient(90deg,#4ade80,#22c55e);
-  color: #064e3b;
-  font-weight: 700;
-  padding: 10px;
-  width: 0%;
-  text-align: center;
-  transition: 0.3s;
-}
-#materialLog {
-  margin-top: 16px;
-  background: #f3f4f6;
-  padding: 12px;
-  border-radius: 12px;
-  max-height: 220px;
-  overflow-y: auto;
-  font-size: 13px;
-}
-canvas {
-  margin-top: 24px;
-  background: white;
-  border-radius: 14px;
-  padding: 14px;
-}
+h1 { text-align:center; margin-bottom:12px; }
+#calendar { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:16px;}
+.day { background:white; border-radius:14px; padding:14px; box-shadow:0 6px 16px rgba(0,0,0,0.08);}
+.day-title { font-weight:700; margin-bottom:6px;}
+.day-note { font-size:13px; color:#6b7280; font-style:italic; margin-bottom:6px;}
+.session { background:#e0e7ff; border:none; border-radius:10px; padding:8px; width:100%; text-align:left; margin-bottom:6px; font-weight:500; cursor:pointer;}
+.session.done { background:#dcfce7; text-decoration:line-through; color:#065f46;}
+canvas { margin-top:24px; background:white; border-radius:14px; padding:14px;}
+#totalBar { background:#e5e7eb; border-radius:14px; overflow:hidden; margin-top:16px;}
+#totalFill { background:linear-gradient(90deg,#4ade80,#22c55e); color:#064e3b; font-weight:700; padding:10px; width:0%; text-align:center; transition:0.3s;}
+#materials { margin-top:16px; padding:10px; background:#f3f4f6; border-radius:10px; max-height:200px; overflow-y:auto;}
 </style>
 </head>
-
 <body>
-<h1>ØveApp</h1>
-<select id="monthSelect">
-  <option value="2026-01">Januar 2026</option>
-</select>
+
+<h1>ØveApp – Januar 2026</h1>
 
 <div id="calendar"></div>
 
@@ -106,14 +36,15 @@ canvas {
   <div id="totalFill">0 timer</div>
 </div>
 
-<h3>Øve-materiale</h3>
-<div id="materialLog">Intet materiale endnu.</div>
+<h2>Øve-materiale</h2>
+<div id="materials"></div>
 
 <canvas id="progressChart" height="220"></canvas>
 
 <script>
 // ---------------- DATA ----------------
 const instruments = ["Orgel","Trommer","Klaver"];
+let materials = JSON.parse(localStorage.getItem("materials")||"[]");
 
 const schedule = {
 "2026-01-01":{note:"",sessions:[["7–8","Orgel"],["11–12","Trommer"],["11:30–12:30","Trommer"],["13–14","Klaver"]]},
@@ -150,12 +81,11 @@ const schedule = {
 };
 
 // ---------------- STATE ----------------
-let done = JSON.parse(localStorage.getItem("done") || "{}");
-let materials = JSON.parse(localStorage.getItem("materials") || "[]");
+let done = JSON.parse(localStorage.getItem("done")||"{}");
 
 // ---------------- FUNCTIONS ----------------
-function save(){ 
-  localStorage.setItem("done",JSON.stringify(done)); 
+function save(){
+  localStorage.setItem("done",JSON.stringify(done));
   localStorage.setItem("materials",JSON.stringify(materials));
 }
 
@@ -171,50 +101,41 @@ function updateTotal(){
 }
 
 function renderMaterials(){
-  const log = document.getElementById("materialLog");
-  if(materials.length===0){
-    log.textContent = "Intet materiale endnu.";
-  } else {
-    log.innerHTML = materials.map(m=>`${m.date} – ${m.instrument}: ${m.material} (${m.hours} time${m.hours>1?"r":""})`).join("<br>");
-  }
+  const mDiv = document.getElementById("materials");
+  if(materials.length===0) { mDiv.innerHTML="<i>Ingen materiale øvet endnu</i>"; return; }
+  mDiv.innerHTML = materials.map(m=>`${m.date} – ${m.instrument} – ${m.material} (${m.hours} t)`).join("<br>");
 }
 
 function render(){
   const cal = document.getElementById("calendar");
   cal.innerHTML = "";
-
   Object.keys(schedule).forEach(date=>{
     const d = schedule[date];
     const box = document.createElement("div");
     box.className = "day";
-
     box.innerHTML = `<div class="day-title">${date}</div>`;
     if(d.note) box.innerHTML += `<div class="day-note">${d.note}</div>`;
-
     d.sessions.forEach((s,i)=>{
       const id = date+"-"+i;
       const b = document.createElement("button");
-      b.className = "session"+(done[id]?" done":"");
+      b.className = "session";
       b.textContent = `${s[0]} – ${s[1]}`;
-      b.onclick = ()=>{
-        done[id] = !done[id];
-        if(done[id]){
+      if(done[id]) b.classList.add("done");
+      b.addEventListener("click", ()=>{
+        if(!done[id]){
+          done[id]=true;
           const material = prompt(`Hvilket materiale har du øvet på for ${s[1]}?`);
-          if(material) materials.push({date:date,instrument:s[1],material:material,hours:1});
+          if(material) materials.push({date:date, instrument:s[1], material:material, hours:1});
         } else {
-          // Fjern materialet for sessionen, hvis man fjerner done
-          materials = materials.filter(m=>!(m.date===date && m.instrument===s[1] && m.hours===1));
+          done[id]=false;
+          materials = materials.filter(m=>!(m.date===date && m.instrument===s[1]));
         }
-        save();
-        render();
-        renderMaterials();
-      };
+        save(); render(); renderMaterials();
+      });
       box.appendChild(b);
     });
-
     cal.appendChild(box);
   });
-
   updateTotal();
   updateChart();
 }
@@ -228,25 +149,21 @@ function updateChart(){
       schedule[d].sessions.filter((_,i)=>done[d+"-"+i] && schedule[d].sessions[i][1]===inst).length
     )
   );
-
   if(chart) chart.destroy();
   chart = new Chart(document.getElementById("progressChart"),{
     type:"line",
     data:{
       labels,
-      datasets: instruments.map((i,idx)=>({
-        label:i,
-        data:data[idx],
-        tension:0.25
-      }))
+      datasets: instruments.map((i,idx)=>({label:i,data:data[idx],tension:0.25}))
     },
     options:{scales:{y:{beginAtZero:true}}}
   });
 }
 
 // ---------------- INIT ----------------
-renderMaterials();
 render();
+renderMaterials();
 </script>
+
 </body>
 </html>
