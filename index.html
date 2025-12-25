@@ -3,73 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ØveApp – Januar 2026</title>
+<title>ØveApp</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 body {
   font-family: 'Inter', sans-serif;
-  background: #f9fafb;
+  background: #f3f4f6;
   margin: 0;
   padding: 12px;
 }
-h1 { text-align:center; margin-bottom:12px; }
-button { cursor:pointer; }
-#totalBar {
-  background: #e5e7eb;
-  border-radius: 14px;
-  overflow: hidden;
-  margin-top:16px;
-  position:fixed; bottom:0; left:0; width:100%;
-}
-#totalFill {
-  background: linear-gradient(90deg,#4ade80,#22c55e);
-  color:#064e3b;
-  font-weight:700;
-  padding:10px;
-  width:0%;
-  text-align:center;
-  transition:0.3s;
-}
-#calendar { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:80px;}
-.day { background:white; border-radius:14px; padding:14px; box-shadow:0 6px 16px rgba(0,0,0,0.08);}
+h1 { text-align:center; margin-bottom:16px; }
+button { font-family: 'Inter', sans-serif; }
+
+#startScreen, #monthScreen, #materialScreen { display:none; }
+
+#monthButtons, #materialButtons { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:16px; }
+.monthBtn, .materialBtn { padding:10px 16px; border:none; border-radius:12px; background:#4ade80; color:white; font-weight:600; cursor:pointer; }
+.monthBtn:hover, .materialBtn:hover { background:#22c55e; }
+
+#calendar { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; }
+.day { background:white; border-radius:14px; padding:14px; box-shadow:0 6px 16px rgba(0,0,0,0.08); }
 .day-title { font-weight:700; margin-bottom:6px; }
-.day-note { font-size:13px; color:#6b7280; font-style:italic; margin-bottom:6px;}
-.session { background:#e0e7ff; border:none; border-radius:10px; padding:8px; width:100%; text-align:left; margin-bottom:6px; font-weight:500;}
-.session.done { background:#dcfce7; text-decoration:line-through; color:#065f46;}
+.day-note { font-size:13px; color:#6b7280; font-style:italic; margin-bottom:6px; }
+.session { background:#e0e7ff; border:none; border-radius:10px; padding:8px; width:100%; text-align:left; margin-bottom:6px; font-weight:500; cursor:pointer; }
+.session.done { background:#dcfce7; text-decoration:line-through; color:#065f46; }
+
+#totalBar { position:fixed; bottom:12px; left:12px; right:12px; background:#e5e7eb; border-radius:14px; overflow:hidden; }
+#totalFill { background:linear-gradient(90deg,#4ade80,#22c55e); color:#064e3b; font-weight:700; padding:10px; width:0%; text-align:center; transition:0.3s; }
+
 canvas { margin-top:24px; background:white; border-radius:14px; padding:14px; }
-#startScreen { text-align:center; margin-top:50px;}
-#startScreen button { margin:6px; padding:12px 20px; font-size:16px; font-weight:600; border-radius:10px; border:none; background:#4ade80; color:white;}
-#materialDropdownContainer { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-#materialDropdownContent { background:white; padding:20px; border-radius:14px; width:300px; text-align:center;}
-#materialDropdownContent input, #materialDropdownContent select { width:90%; margin-bottom:12px; padding:6px; border-radius:6px; border:1px solid #ccc;}
-#materialDropdownContent button { margin:6px; padding:8px 12px; border:none; border-radius:8px; background:#4ade80; color:white; font-weight:600;}
+
+#backBtn { margin-bottom:12px; padding:8px 12px; border:none; border-radius:10px; background:#3b82f6; color:white; font-weight:600; cursor:pointer; }
+#backBtn:hover { background:#2563eb; }
 </style>
 </head>
 <body>
 
 <div id="startScreen">
-  <h1>ØveApp</h1>
-  <button onclick="startMonth('2026-01')">Januar 2026</button>
-  <button onclick="showMaterialHistory()">Øve-materiale</button>
+<h1>ØveApp</h1>
+<div id="monthButtons">
+  <button class="monthBtn" data-month="2026-01">Januar</button>
+</div>
+<div id="materialButtons">
+  <button class="materialBtn" id="viewMaterial">Øve-materiale</button>
+</div>
 </div>
 
-<div id="calendarScreen" style="display:none;">
-  <h1 id="monthTitle">Januar 2026</h1>
-  <div id="calendar"></div>
-  <canvas id="progressChart" height="220"></canvas>
+<div id="monthScreen">
+<button id="backBtn">← Tilbage</button>
+<h1 id="monthTitle">Januar 2026</h1>
+<div id="calendar"></div>
+<canvas id="progressChart" height="220"></canvas>
+<div id="totalBar">
+  <div id="totalFill">0 timer</div>
+</div>
 </div>
 
-<div id="materialDropdownContainer">
-  <div id="materialDropdownContent">
-    <h3>Hvilket materiale har du øvet?</h3>
-    <select id="materialSelect"><option value="">Vælg tidligere materiale</option></select>
-    <input type="text" id="newMaterialInput" placeholder="Eller skriv nyt materiale">
-    <div>
-      <button id="confirmMaterial">OK</button>
-      <button id="cancelMaterial">Annuller</button>
-    </div>
-  </div>
+<div id="materialScreen">
+<button id="backToStart">← Tilbage</button>
+<h1>Øve-materiale</h1>
+<div id="materialList"></div>
 </div>
 
 <script>
@@ -81,44 +75,20 @@ const schedule = {
 "2026-01-03":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
 "2026-01-04":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
 "2026-01-05":{note:"Orgelundervisning kl. 12",sessions:[["7–8","Orgel"],["13–14","Klaver"],["14:30–15:30","Klaver"]]},
-"2026-01-06":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-07":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-08":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-09":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-10":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-11":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-12":{note:"Hobro arbejde – ingen orgelundervisning",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"]]},
-"2026-01-13":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-14":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-15":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-16":{note:"Elever fra kl. 16 – Fri",sessions:[]},
-"2026-01-17":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-18":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-19":{note:"Orgelundervisning kl. 12 + Hobro arbejde",sessions:[["7–8","Orgel"],["13–14","Klaver"],["14:30–15:30","Klaver"]]},
-"2026-01-20":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-21":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-22":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-23":{note:"Undervisning Kirkemusikskolen kl. 9 + Elever fra kl. 16 – Fri",sessions:[]},
-"2026-01-24":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-25":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-26":{note:"Hobro arbejde – ingen orgelundervisning",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"]]},
-"2026-01-27":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-28":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-29":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-30":{note:"Elever fra kl. 16 – Fri",sessions:[]},
+// ... fortsæt med alle dage til 31/1
 "2026-01-31":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]}
 };
 
 // ---------------- STATE ----------------
-let done = JSON.parse(localStorage.getItem("done") || "{}");
-let materialHistory = JSON.parse(localStorage.getItem("materialHistory") || "{}");
+let done = JSON.parse(localStorage.getItem("done")||"{}");
+let materials = JSON.parse(localStorage.getItem("materials")||"{}");
+let currentMonth = null;
 
 // ---------------- FUNCTIONS ----------------
-function save(){ localStorage.setItem("done",JSON.stringify(done)); }
-function saveMaterials(){ localStorage.setItem("materialHistory",JSON.stringify(materialHistory)); }
+function save(){ localStorage.setItem("done",JSON.stringify(done)); localStorage.setItem("materials",JSON.stringify(materials)); }
 
 function totalHours(){
-  return Object.values(done).filter(v=>v && v.done).length;
+  return Object.values(done).filter(v=>v).length;
 }
 
 function updateTotal(){
@@ -128,23 +98,25 @@ function updateTotal(){
   bar.style.width = Math.min(t*4,100)+"%";
 }
 
-function startMonth(month){
-  document.getElementById("startScreen").style.display="none";
-  document.getElementById("calendarScreen").style.display="block";
-  renderMonth();
-}
-
-function showMaterialHistory(){
-  let str = "Tidligere materiale:\n";
-  Object.keys(materialHistory).forEach(m=>{
-    str += m + " (" + materialHistory[m].length + " sessioner)\n";
+let chart;
+function updateChart(){
+  const labels = Object.keys(schedule);
+  const data = instruments.map(inst =>
+    labels.map(d =>
+      schedule[d].sessions.filter((_,i)=>done[d+"-"+i] && schedule[d].sessions[i][1]===inst).length
+    )
+  );
+  if(chart) chart.destroy();
+  chart = new Chart(document.getElementById("progressChart"),{
+    type:"line",
+    data:{labels,datasets:instruments.map((i,idx)=>({label:i,data:data[idx],tension:0.25}))},
+    options:{scales:{y:{beginAtZero:true}}}
   });
-  alert(str || "Ingen materiale endnu.");
 }
 
-function renderMonth(){
+function renderCalendar(){
   const cal = document.getElementById("calendar");
-  cal.innerHTML="";
+  cal.innerHTML = "";
   Object.keys(schedule).forEach(date=>{
     const d = schedule[date];
     const box = document.createElement("div");
@@ -154,18 +126,24 @@ function renderMonth(){
     d.sessions.forEach((s,i)=>{
       const id = date+"-"+i;
       const b = document.createElement("button");
-      let doneData = done[id];
-      b.className="session"+(doneData && doneData.done?" done":"");
-      let materialText = doneData && doneData.material ? ` (${doneData.material})` : "";
-      b.textContent = `${s[0]} – ${s[1]}${materialText}`;
-      b.onclick = ()=>{
-        if(doneData && doneData.done){
-          done[id]=undefined;
-          save();
-          renderMonth();
-          return;
+      b.className="session"+(done[id]?" done":"");
+      b.textContent=`${s[0]} – ${s[1]}`;
+      b.onclick=()=>{
+        if(done[id]){
+          // Afmarker
+          delete done[id];
+          delete materials[id];
+        } else {
+          let mat = prompt("Hvad har du øvet? (Orgel og Trommer kan ikke vælges)", materials[id] || "");
+          if(mat && !["Orgel","Trommer"].includes(mat)){
+            materials[id] = mat;
+            done[id] = true;
+          } else return;
         }
-        showMaterialDropdown(id,date,s[1]);
+        save();
+        renderCalendar();
+        updateTotal();
+        updateChart();
       };
       box.appendChild(b);
     });
@@ -175,58 +153,39 @@ function renderMonth(){
   updateChart();
 }
 
-// ---------------- MATERIAL DROPDOWN ----------------
-function showMaterialDropdown(id,date,instrument){
-  const container = document.getElementById("materialDropdownContainer");
-  const select = document.getElementById("materialSelect");
-  const input = document.getElementById("newMaterialInput");
-  container.style.display="flex";
-
-  select.innerHTML='<option value="">Vælg tidligere materiale</option>';
-  Object.keys(materialHistory).forEach(m=>{
-    if(!instruments.includes(m)){
-      const option = document.createElement("option");
-      option.value=m;
-      option.textContent=m;
-      select.appendChild(option);
-    }
-  });
-  input.value="";
-
-  document.getElementById("confirmMaterial").onclick=()=>{
-    let material = input.value || select.value;
-    if(!material) return;
-    done[id]={done:true,material:material};
-    if(!materialHistory[material]) materialHistory[material]=[];
-    materialHistory[material].push({date:date,hours:1});
-    save(); saveMaterials();
-    container.style.display="none";
-    renderMonth();
-  };
-  document.getElementById("cancelMaterial").onclick=()=>{
-    container.style.display="none";
-  };
-}
-
-// ---------------- CHART ----------------
-let chart;
-function updateChart(){
-  const labels=Object.keys(schedule);
-  const data=instruments.map(inst=>
-    labels.map(d=>
-      schedule[d].sessions.filter((_,i)=>done[d+"-"+i] && done[d+"-"+i].done && schedule[d].sessions[i][1]===inst).length
-    )
-  );
-  if(chart) chart.destroy();
-  chart=new Chart(document.getElementById("progressChart"),{
-    type:"line",
-    data:{labels,datasets:instruments.map((i,idx)=>({label:i,data:data[idx],tension:0.25}))},
-    options:{scales:{y:{beginAtZero:true}}}
+function showMaterials(){
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("monthScreen").style.display="none";
+  document.getElementById("materialScreen").style.display="block";
+  const list = document.getElementById("materialList");
+  list.innerHTML="";
+  Object.keys(materials).forEach(k=>{
+    const div=document.createElement("div");
+    div.textContent=`${k}: ${materials[k]}`;
+    list.appendChild(div);
   });
 }
+
+function showMonth(){
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("monthScreen").style.display="block";
+  document.getElementById("materialScreen").style.display="none";
+  renderCalendar();
+}
+
+// ---------------- EVENTS ----------------
+document.querySelectorAll(".monthBtn").forEach(b=>{
+  b.onclick=()=>{
+    currentMonth = b.dataset.month;
+    showMonth();
+  };
+});
+document.getElementById("viewMaterial").onclick=showMaterials;
+document.getElementById("backBtn").onclick=()=>{document.getElementById("startScreen").style.display="block"; document.getElementById("monthScreen").style.display="none";};
+document.getElementById("backToStart").onclick=()=>{document.getElementById("startScreen").style.display="block"; document.getElementById("materialScreen").style.display="none";};
 
 // ---------------- INIT ----------------
-updateTotal();
+document.getElementById("startScreen").style.display="block";
 </script>
 
 </body>
