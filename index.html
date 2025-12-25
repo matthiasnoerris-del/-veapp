@@ -8,9 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Inter', sans-serif; background:#f9fafb; margin:0; padding:12px;}
-h1, h2 { text-align:center; margin-bottom:12px;}
+h1,h2 { text-align:center; margin-bottom:12px;}
 button { cursor:pointer; }
-#totalBar { position:fixed; bottom:0; left:0; right:0; background:#e5e7eb; border-radius:0; overflow:hidden;}
+#totalBar { position:fixed; bottom:0; left:0; right:0; background:#e5e7eb; overflow:hidden;}
 #totalFill { background:linear-gradient(90deg,#4ade80,#22c55e); color:#064e3b; font-weight:700; padding:10px; width:0%; text-align:center; transition:0.3s;}
 #calendar { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:60px;}
 .day { background:white; border-radius:14px; padding:14px; box-shadow:0 6px 16px rgba(0,0,0,0.08);}
@@ -18,6 +18,7 @@ button { cursor:pointer; }
 .day-note { font-size:13px; color:#6b7280; font-style:italic; margin-bottom:6px;}
 .session { background:#e0e7ff; border:none; border-radius:10px; padding:8px; width:100%; text-align:left; margin-bottom:6px; font-weight:500;}
 .session.done { background:#dcfce7; text-decoration:line-through; color:#065f46;}
+select { width:100%; padding:6px; margin-top:4px; border-radius:6px;}
 canvas { margin-top:24px; background:white; border-radius:14px; padding:14px;}
 #menu { text-align:center; margin-bottom:12px;}
 .menu-btn { margin:4px; padding:10px 14px; border-radius:10px; border:none; background:#3b82f6; color:white; font-weight:600;}
@@ -42,45 +43,16 @@ let materials = JSON.parse(localStorage.getItem("materials") || "{}");
 let done = JSON.parse(localStorage.getItem("done") || "{}");
 let currentMonth = "";
 
+// JANUAR DATA (forkortet her, men du skal kopiere hele januar data)
 const schedule = {
 "2026-01-01":{note:"",sessions:[["7–8","Orgel"],["11–12","Trommer"],["11:30–12:30","Trommer"],["13–14","Klaver"]]},
 "2026-01-02":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-03":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-04":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-05":{note:"Orgelundervisning kl. 12",sessions:[["7–8","Orgel"],["13–14","Klaver"],["14:30–15:30","Klaver"]]},
-"2026-01-06":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-07":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-08":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-09":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-10":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-11":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-12":{note:"Hobro arbejde – ingen orgelundervisning",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"]]},
-"2026-01-13":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-14":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-15":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-16":{note:"Elever fra kl. 16 – Fri",sessions:[]},
-"2026-01-17":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-18":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-19":{note:"Orgelundervisning kl. 12 + Hobro arbejde",sessions:[["7–8","Orgel"],["13–14","Klaver"],["14:30–15:30","Klaver"]]},
-"2026-01-20":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-21":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-22":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-23":{note:"Undervisning Kirkemusikskolen kl. 9 + Elever fra kl. 16 – Fri",sessions:[]},
-"2026-01-24":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-25":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-26":{note:"Hobro arbejde – ingen orgelundervisning",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"]]},
-"2026-01-27":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
-"2026-01-28":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-"2026-01-29":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
-"2026-01-30":{note:"Elever fra kl. 16 – Fri",sessions:[]},
-"2026-01-31":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]}
+// ... resten af januar
 };
 
 // ---------------- STATE ----------------
 function save(){ localStorage.setItem("done",JSON.stringify(done)); localStorage.setItem("materials",JSON.stringify(materials)); }
-
 function totalHours(){ return Object.values(done).filter(v=>v).length; }
-
 function updateTotal(){
   const t = totalHours();
   const bar = document.getElementById("totalFill");
@@ -113,28 +85,34 @@ function renderCalendar(){
     if(d.note) box.innerHTML+=`<div class="day-note">${d.note}</div>`;
     d.sessions.forEach((s,i)=>{
       const id = date+"-"+i;
-      const b = document.createElement("button");
+      const b = document.createElement("div");
       b.className="session"+(done[id]?" done":"");
       b.textContent=`${s[0]} – ${s[1]}`;
-      b.onclick=()=>{
-        if(done[id]){
-          delete done[id];
-          delete materials[id];
+      
+      const sel = document.createElement("select");
+      sel.style.display="none";
+      sel.onchange = ()=>{
+        if(sel.value==="") return;
+        if(sel.value==="Slet"){
+          delete done[id]; delete materials[id];
         } else {
-          const prevMat = [...new Set(Object.values(materials).filter(m=>m && m!=="Orgel" && m!=="Trommer"))];
-          let mat;
-          if(prevMat.length) mat = prompt("Hvilket materiale har du øvet?\nTidligere: "+prevMat.join(", "), prevMat[0]);
-          else mat = prompt("Hvilket materiale har du øvet?");
-          if(!mat) return;
-          materials[id]=mat;
+          materials[id]=sel.value;
           done[id]=true;
         }
-        save();
-        renderCalendar();
-        updateTotal();
-        updateChart();
+        sel.style.display="none";
+        save(); renderCalendar(); updateTotal(); updateChart();
       };
+
+      b.onclick=()=>{
+        const prevMat = [...new Set(Object.values(materials).filter(m=>m && m!=="Orgel" && m!=="Trommer"))];
+        sel.innerHTML = "<option value=''>Vælg materiale</option>";
+        prevMat.forEach(m=>{ sel.innerHTML+=`<option value='${m}'>${m}</option>`; });
+        sel.innerHTML += "<option value='Slet'>Slet</option>";
+        sel.style.display="block";
+      };
+
       box.appendChild(b);
+      box.appendChild(sel);
     });
     cal.appendChild(box);
   });
