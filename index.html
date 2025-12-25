@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ØveApp – Januar 2026</title>
+<title>ØveApp 2026</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
 
@@ -14,94 +14,40 @@ body {
   margin: 0;
   padding: 12px;
 }
-
-h1 {
-  text-align: center;
-  margin-bottom: 12px;
-  font-family: 'Roboto Mono', monospace;
-  color: #111827;
-}
-
-#totalBar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #e5e7eb;
-  border-radius: 14px 14px 0 0;
-  overflow: hidden;
-  margin: 0;
-}
-
-#totalFill {
-  background: linear-gradient(90deg,#4ade80,#22c55e);
-  color: #064e3b;
-  font-weight: 700;
-  padding: 10px;
-  width: 0%;
-  text-align: center;
-  transition: 0.3s;
-}
-
-#calendar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
-  gap: 14px;
-  margin-bottom: 70px; /* plads til total bar */
-}
-
-.day {
-  background: white;
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-}
-
-.day-title {
-  font-weight: 700;
-  margin-bottom: 6px;
-  font-family: 'Roboto Mono', monospace;
-}
-
-.day-note {
-  font-size: 13px;
-  color: #6b7280;
-  font-style: italic;
-  margin-bottom: 6px;
-}
-
-.session {
-  background: #e0e7ff;
-  border: none;
-  border-radius: 10px;
-  padding: 8px;
-  width: 100%;
-  text-align: left;
-  margin-bottom: 6px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.session.done {
-  background: #dcfce7;
-  text-decoration: line-through;
-  color: #065f46;
-}
-
-canvas {
-  margin-top: 24px;
-  background: white;
-  border-radius: 14px;
-  padding: 14px;
-}
+h1 { text-align:center; font-family:'Roboto Mono', monospace; color:#111827; }
+#totalBar { position: fixed; bottom:0; left:0; width:100%; background:#e5e7eb; border-radius:14px 14px 0 0; overflow:hidden; }
+#totalFill { background:linear-gradient(90deg,#4ade80,#22c55e); color:#064e3b; font-weight:700; padding:10px; width:0%; text-align:center; transition:0.3s; }
+#calendar { display:grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:70px; }
+.day { background:white; border-radius:14px; padding:14px; box-shadow:0 6px 16px rgba(0,0,0,0.08); }
+.day-title { font-weight:700; margin-bottom:6px; font-family:'Roboto Mono', monospace; }
+.day-note { font-size:13px; color:#6b7280; font-style:italic; margin-bottom:6px; }
+.session { background:#e0e7ff; border:none; border-radius:10px; padding:8px; width:100%; text-align:left; margin-bottom:6px; font-weight:500; cursor:pointer; }
+.session.done { background:#dcfce7; text-decoration:line-through; color:#065f46; }
+canvas { margin-top:24px; background:white; border-radius:14px; padding:14px; }
+button.nav { margin:5px; padding:10px 14px; border:none; border-radius:10px; background:#3b82f6; color:white; font-weight:600; cursor:pointer; }
+button.nav:hover { background:#2563eb; }
 </style>
 </head>
 <body>
 
-<h1>ØveApp – Januar 2026</h1>
+<h1>ØveApp 2026</h1>
 
-<div id="calendar"></div>
-<canvas id="progressChart" height="220"></canvas>
+<div id="startScreen">
+  <button class="nav" onclick="startMonth('januar')">Januar</button>
+  <button class="nav" onclick="showMaterials()">Øve-materiale</button>
+</div>
+
+<div id="calendarScreen" style="display:none;">
+  <div id="calendar"></div>
+  <canvas id="progressChart" height="220"></canvas>
+</div>
+
+<div id="materialScreen" style="display:none;">
+  <h2>Øve-materiale</h2>
+  <div id="materialList"></div>
+  <button class="nav" onclick="backToStart()">Tilbage</button>
+</div>
+
 <div id="totalBar">
   <div id="totalFill">0 timer</div>
 </div>
@@ -112,18 +58,20 @@ const instruments = ["Orgel","Trommer","Klaver"];
 const schedule = {
 "2026-01-01":{note:"",sessions:[["7–8","Orgel"],["11–12","Trommer"],["11:30–12:30","Trommer"],["13–14","Klaver"]]},
 "2026-01-02":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
-// ... fortsæt alle datoer som tidligere (inkl. noter som Kirkemusikskolen, Hadsund osv.)
+// … alle dage i januar med noter som tidligere
 "2026-01-31":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]}
 };
 
 // ---------------- STATE ----------------
 let done = JSON.parse(localStorage.getItem("done") || "{}");
-let materialHistory = JSON.parse(localStorage.getItem("materialHistory") || "{}");
+let materialHistory = JSON.parse(localStorage.getItem("materialHistory") || {});
+let materialLog = JSON.parse(localStorage.getItem("materialLog") || []);
 
 // ---------------- FUNCTIONS ----------------
 function save(){ 
   localStorage.setItem("done",JSON.stringify(done));
   localStorage.setItem("materialHistory",JSON.stringify(materialHistory));
+  localStorage.setItem("materialLog",JSON.stringify(materialLog));
 }
 
 function totalHours(){
@@ -137,6 +85,31 @@ function updateTotal(){
   bar.style.width = Math.min(t*4,100)+"%";
 }
 
+function startMonth(month){
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("calendarScreen").style.display="block";
+  render();
+}
+
+function backToStart(){
+  document.getElementById("startScreen").style.display="block";
+  document.getElementById("calendarScreen").style.display="none";
+  document.getElementById("materialScreen").style.display="none";
+}
+
+function showMaterials(){
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("calendarScreen").style.display="none";
+  document.getElementById("materialScreen").style.display="block";
+  const list = document.getElementById("materialList");
+  list.innerHTML = "";
+  materialLog.forEach(entry=>{
+    const div = document.createElement("div");
+    div.textContent = `${entry.date} – ${entry.instrument}: ${entry.material}`;
+    list.appendChild(div);
+  });
+}
+
 function render(){
   const cal = document.getElementById("calendar");
   cal.innerHTML = "";
@@ -145,7 +118,6 @@ function render(){
     const d = schedule[date];
     const box = document.createElement("div");
     box.className = "day";
-
     box.innerHTML = `<div class="day-title">${date}</div>`;
     if(d.note) box.innerHTML += `<div class="day-note">${d.note}</div>`;
 
@@ -156,10 +128,12 @@ function render(){
       b.textContent = `${s[0]} – ${s[1]}`;
       b.onclick = ()=>{
         if(!done[id]){
+          // Dropdown valg
           let mat = prompt("Hvilket materiale har du øvet på?", materialHistory[s[1]] || "");
           if(mat){
             materialHistory[s[1]] = mat;
             done[id] = mat;
+            materialLog.push({date:date,instrument:s[1],material:mat});
           }
         } else {
           done[id] = false;
@@ -200,9 +174,6 @@ function updateChart(){
     options:{scales:{y:{beginAtZero:true}}}
   });
 }
-
-// ---------------- INIT ----------------
-render();
 </script>
 </body>
 </html>
