@@ -1,133 +1,326 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Øvningsapp – Januar 2026</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ØveApp – Januar 2026</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont;
-      background: #0f172a;
-      color: #e5e7eb;
-      margin: 0;
-      padding: 16px;
-    }
+<style>
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --primary: #6366f1;
+  --primary-soft: #eef2ff;
+  --success: #22c55e;
+  --success-soft: #dcfce7;
+  --text: #111827;
+  --muted: #6b7280;
+  --radius: 18px;
+}
 
-    h1 {
-      text-align: center;
-      margin-bottom: 4px;
-    }
+* { box-sizing: border-box; }
 
-    .subtitle {
-      text-align: center;
-      color: #94a3b8;
-      margin-bottom: 20px;
-    }
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg,#f8fafc,var(--bg));
+  margin: 0;
+  padding: 14px;
+  color: var(--text);
+}
 
-    .day {
-      background: #1e293b;
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+h1 { text-align:center; margin:10px 0 18px; }
+h2 { margin:8px 0 16px; }
 
-    input {
-      width: 80px;
-      padding: 6px;
-      border-radius: 6px;
-      border: none;
-      font-size: 16px;
-    }
+button {
+  border:none;
+  border-radius:14px;
+  padding:12px 14px;
+  background:var(--primary);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+}
+button:hover { opacity:.9; transform:translateY(-1px); }
+button:active { transform:none; }
 
-    canvas {
-      background: #020617;
-      border-radius: 12px;
-      margin-top: 20px;
-      padding: 10px;
-    }
+#menu button {
+  width:100%;
+  margin-bottom:12px;
+  font-size:16px;
+}
 
-    .total {
-      text-align: center;
-      font-size: 18px;
-      margin-top: 16px;
-      color: #38bdf8;
-    }
-  </style>
+#menu,#calendarScreen,#materialScreen { display:none; }
+
+/* CALENDAR */
+#calendar {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:16px;
+}
+
+.day {
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.06);
+}
+
+.day-title { font-weight:700; margin-bottom:6px; }
+.day-note {
+  font-size:13px;
+  color:var(--muted);
+  font-style:italic;
+  margin-bottom:10px;
+}
+
+/* SESSIONS */
+.session {
+  background:var(--primary-soft);
+  color:var(--primary);
+  border-radius:12px;
+  padding:10px 12px;
+  width:100%;
+  text-align:left;
+  margin-bottom:8px;
+  font-weight:600;
+}
+.session.done {
+  background:var(--success-soft);
+  color:#065f46;
+  text-decoration:line-through;
+}
+
+/* TOTAL BAR */
+#totalBar {
+  background:#e5e7eb;
+  border-radius:999px;
+  overflow:hidden;
+  margin-top:20px;
+}
+#totalFill {
+  background:linear-gradient(90deg,#4ade80,#22c55e);
+  padding:10px;
+  color:#064e3b;
+  font-weight:700;
+  width:0%;
+  text-align:center;
+  transition:.3s;
+}
+
+/* FORM */
+select,input[type=text] {
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  margin-bottom:12px;
+  font-size:14px;
+}
+
+/* MODAL */
+#materialDialog {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.45);
+  backdrop-filter:blur(6px);
+}
+#materialDialog .box {
+  background:white;
+  max-width:340px;
+  margin:30% auto;
+  padding:20px;
+  border-radius:22px;
+  box-shadow:0 30px 60px rgba(0,0,0,.25);
+}
+
+canvas {
+  margin-top:26px;
+  background:white;
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.06);
+}
+</style>
 </head>
 
 <body>
 
-<h1>Øvningsapp</h1>
-<div class="subtitle">Januar 2026</div>
+<h1>ØveApp</h1>
 
-<div id="days"></div>
+<div id="menu">
+  <button onclick="openMonth('2026-01')">📅 Januar 2026</button>
+  <button onclick="openMaterialScreen()">🎵 Øve-materialer</button>
+</div>
 
-<canvas id="chart"></canvas>
-<div class="total" id="totalHours">Total: 0 timer</div>
+<div id="calendarScreen">
+  <button style="background:#e5e7eb;color:#111" onclick="goBackMenu()">⬅ Tilbage</button>
+  <h2 id="monthTitle"></h2>
+  <div id="calendar"></div>
+  <canvas id="progressChart" height="220"></canvas>
+  <div id="totalBar"><div id="totalFill">0 timer</div></div>
+</div>
+
+<div id="materialScreen">
+  <button style="background:#e5e7eb;color:#111" onclick="goBackMenu()">⬅ Tilbage</button>
+  <h2>Øve-materiale</h2>
+  <div id="materialList"></div>
+</div>
+
+<!-- MODAL -->
+<div id="materialDialog">
+  <div class="box">
+    <h3>Hvad har du øvet?</h3>
+    <select id="materialSelect">
+      <option value="">– Vælg tidligere –</option>
+    </select>
+    <input id="materialInput" type="text" placeholder="Eller skriv nyt materiale">
+    <button onclick="confirmMaterial()">OK</button>
+    <button style="background:#e5e7eb;color:#111" onclick="closeMaterialDialog()">Annuller</button>
+  </div>
+</div>
 
 <script>
-  const year = 2026;
-  const month = 0; // Januar (0 = januar)
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+// DATA
+const instruments=["Orgel","Trommer","Klaver"];
+let selectedMonth="2026-01";
+let done=JSON.parse(localStorage.getItem("done")||"{}");
+let materials=JSON.parse(localStorage.getItem("materials")||"{}");
+let currentSessionId=null;
 
-  const daysContainer = document.getElementById("days");
-  const labels = [];
-  const data = [];
+const schedule={
+"2026-01-01":{note:"",sessions:[["7–8","Orgel"],["11–12","Trommer"],["13–14","Klaver"]]},
+"2026-01-02":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["14–15","Klaver"]]},
+"2026-01-03":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["12–13","Klaver"]]},
+"2026-01-04":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["14–15","Klaver"]]},
+"2026-01-05":{note:"Orgelundervisning kl. 12",sessions:[["7–8","Orgel"],["13–14","Klaver"]]}
+};
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    labels.push(day.toString());
-    data.push(0);
+// HELPERS
+function save(){
+  localStorage.setItem("done",JSON.stringify(done));
+  localStorage.setItem("materials",JSON.stringify(materials));
+}
 
-    const div = document.createElement("div");
-    div.className = "day";
+function totalHours(){
+  return Object.values(done).filter(Boolean).length;
+}
 
-    div.innerHTML = `
-      <span>${day}. januar</span>
-      <input type="number" min="0" step="0.25" placeholder="timer" data-day="${day}">
-    `;
+function updateTotal(){
+  const t=totalHours();
+  totalFill.textContent=t+" timer";
+  totalFill.style.width=Math.min(t*6,100)+"%";
+}
 
-    daysContainer.appendChild(div);
-  }
-
-  const ctx = document.getElementById("chart");
-
-  const chart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Øvetimer",
-        data: data,
-        backgroundColor: "#38bdf8"
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-
-  document.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", e => {
-      const dayIndex = e.target.dataset.day - 1;
-      data[dayIndex] = Number(e.target.value) || 0;
-      chart.update();
-
-      const total = data.reduce((a, b) => a + b, 0);
-      document.getElementById("totalHours").textContent =
-        `Total: ${total.toFixed(2)} timer`;
+// CALENDAR
+function renderCalendar(){
+  monthTitle.textContent=selectedMonth;
+  calendar.innerHTML="";
+  Object.keys(schedule).forEach(date=>{
+    if(!date.startsWith(selectedMonth)) return;
+    const d=schedule[date];
+    const box=document.createElement("div");
+    box.className="day";
+    box.innerHTML=`<div class="day-title">${date}</div>`;
+    if(d.note) box.innerHTML+=`<div class="day-note">${d.note}</div>`;
+    d.sessions.forEach((s,i)=>{
+      const id=date+"-"+i;
+      const b=document.createElement("button");
+      b.className="session"+(done[id]?" done":"");
+      b.textContent=`${s[0]} – ${s[1]}`;
+      b.onclick=()=>selectMaterial(id);
+      box.appendChild(b);
     });
+    calendar.appendChild(box);
   });
+  updateTotal();
+  updateChart();
+}
+
+// MATERIAL
+function selectMaterial(id){
+  if(done[id]){
+    delete done[id]; delete materials[id];
+    save(); renderCalendar(); return;
+  }
+  currentSessionId=id;
+  materialSelect.innerHTML=`<option value="">– Vælg tidligere –</option>`;
+  [...new Set(Object.values(materials))].forEach(m=>{
+    const o=document.createElement("option");
+    o.value=o.textContent=m;
+    materialSelect.appendChild(o);
+  });
+  materialInput.value="";
+  materialDialog.style.display="block";
+}
+
+function confirmMaterial(){
+  const m=materialInput.value.trim()||materialSelect.value;
+  if(!m) return;
+  done[currentSessionId]=true;
+  materials[currentSessionId]=m;
+  save();
+  closeMaterialDialog();
+  renderCalendar();
+}
+
+function closeMaterialDialog(){
+  materialDialog.style.display="none";
+  currentSessionId=null;
+}
+
+// CHART
+let chart;
+function updateChart(){
+  const labels=Object.keys(schedule);
+  const data=instruments.map(inst =>
+    labels.map(d =>
+      schedule[d].sessions.filter((_,i)=>done[d+"-"+i]&&schedule[d].sessions[i][1]===inst).length
+    )
+  );
+  if(chart) chart.destroy();
+  chart=new Chart(progressChart,{
+    type:"line",
+    data:{labels,datasets:instruments.map((i,idx)=>({label:i,data:data[idx],tension:.3}))},
+    options:{scales:{y:{beginAtZero:true}}}
+  });
+}
+
+// MATERIAL SCREEN
+function renderMaterialScreen(){
+  materialList.innerHTML="";
+  const c={};
+  Object.values(materials).forEach(m=>c[m]=(c[m]||0)+1);
+  Object.keys(c).forEach(m=>{
+    const d=document.createElement("div");
+    d.textContent=`${m}: ${c[m]} timer`;
+    materialList.appendChild(d);
+  });
+}
+
+// NAV
+function goBackMenu(){
+  menu.style.display="block";
+  calendarScreen.style.display="none";
+  materialScreen.style.display="none";
+}
+function openMonth(m){
+  selectedMonth=m;
+  menu.style.display="none";
+  calendarScreen.style.display="block";
+  renderCalendar();
+}
+function openMaterialScreen(){
+  menu.style.display="none";
+  materialScreen.style.display="block";
+  renderMaterialScreen();
+}
+
+menu.style.display="block";
 </script>
 
 </body>
