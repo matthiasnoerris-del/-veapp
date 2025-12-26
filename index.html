@@ -9,141 +9,114 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --bg: #f4f6fb;
-  --card: #ffffff;
-  --primary: #6366f1;
-  --primary-soft: #eef2ff;
-  --success: #22c55e;
-  --success-soft: #dcfce7;
-  --text: #111827;
-  --muted: #6b7280;
-  --radius: 18px;
-}
-
-* { box-sizing: border-box; }
-
 body {
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(180deg,#f8fafc,var(--bg));
+  background: #f9fafb;
   margin: 0;
-  padding: 14px;
-  color: var(--text);
+  padding: 12px;
 }
 
-h1 { text-align:center; margin:10px 0 18px; }
-h2 { margin:8px 0 16px; }
+h1, h2 {
+  text-align: center;
+  margin-bottom: 12px;
+}
 
 button {
-  border:none;
-  border-radius:14px;
-  padding:12px 14px;
-  background:var(--primary);
-  color:white;
-  font-weight:600;
-  cursor:pointer;
-  transition:.2s;
-}
-button:hover { opacity:.9; transform:translateY(-1px); }
-button:active { transform:none; }
-
-#menu button {
-  width:100%;
-  margin-bottom:12px;
-  font-size:16px;
+  cursor: pointer;
 }
 
-#menu,#calendarScreen,#materialScreen { display:none; }
+#menu, #calendarScreen, #materialScreen {
+  display: none;
+}
 
-/* CALENDAR */
+#totalBar {
+  background: #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+#totalFill {
+  background: linear-gradient(90deg,#4ade80,#22c55e);
+  color: #064e3b;
+  font-weight: 700;
+  padding: 10px;
+  width: 0%;
+  text-align: center;
+  transition: 0.3s;
+}
+
 #calendar {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+  gap: 14px;
 }
 
 .day {
-  background:var(--card);
-  border-radius:var(--radius);
-  padding:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.06);
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
 }
 
-.day-title { font-weight:700; margin-bottom:6px; }
+.day-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
 .day-note {
-  font-size:13px;
-  color:var(--muted);
-  font-style:italic;
-  margin-bottom:10px;
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+  margin-bottom: 6px;
 }
 
-/* SESSIONS */
 .session {
-  background:var(--primary-soft);
-  color:var(--primary);
-  border-radius:12px;
-  padding:10px 12px;
-  width:100%;
-  text-align:left;
-  margin-bottom:8px;
-  font-weight:600;
+  background: #e0e7ff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
+
 .session.done {
-  background:var(--success-soft);
-  color:#065f46;
-  text-decoration:line-through;
+  background: #dcfce7;
+  text-decoration: line-through;
+  color: #065f46;
 }
 
-/* TOTAL BAR */
-#totalBar {
-  background:#e5e7eb;
-  border-radius:999px;
-  overflow:hidden;
-  margin-top:20px;
-}
-#totalFill {
-  background:linear-gradient(90deg,#4ade80,#22c55e);
-  padding:10px;
-  color:#064e3b;
-  font-weight:700;
-  width:0%;
-  text-align:center;
-  transition:.3s;
+select, input[type=text] {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
-/* FORM */
-select,input[type=text] {
-  width:100%;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid #e5e7eb;
-  margin-bottom:12px;
-  font-size:14px;
+canvas {
+  margin-top: 24px;
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
 }
 
-/* MODAL */
+/* Dialog */
 #materialDialog {
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(15,23,42,.45);
-  backdrop-filter:blur(6px);
+  background:rgba(0,0,0,0.4);
 }
 #materialDialog .box {
   background:white;
-  max-width:340px;
-  margin:30% auto;
-  padding:20px;
-  border-radius:22px;
-  box-shadow:0 30px 60px rgba(0,0,0,.25);
-}
-
-canvas {
-  margin-top:26px;
-  background:white;
-  border-radius:var(--radius);
+  max-width:320px;
+  margin:20% auto;
   padding:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.06);
+  border-radius:14px;
 }
 </style>
 </head>
@@ -153,113 +126,156 @@ canvas {
 <h1>ØveApp</h1>
 
 <div id="menu">
-  <button onclick="openMonth('2026-01')">📅 Januar 2026</button>
-  <button onclick="openMaterialScreen()">🎵 Øve-materialer</button>
+  <button onclick="openMonth('2026-01')">Januar 2026</button>
+  <button onclick="openMaterialScreen()">Øve-materiale</button>
 </div>
 
 <div id="calendarScreen">
-  <button style="background:#e5e7eb;color:#111" onclick="goBackMenu()">⬅ Tilbage</button>
+  <button onclick="goBackMenu()">⬅ Tilbage</button>
   <h2 id="monthTitle"></h2>
   <div id="calendar"></div>
   <canvas id="progressChart" height="220"></canvas>
-  <div id="totalBar"><div id="totalFill">0 timer</div></div>
+  <div id="totalBar">
+    <div id="totalFill">0 timer</div>
+  </div>
 </div>
 
 <div id="materialScreen">
-  <button style="background:#e5e7eb;color:#111" onclick="goBackMenu()">⬅ Tilbage</button>
+  <button onclick="goBackMenu()">⬅ Tilbage</button>
   <h2>Øve-materiale</h2>
   <div id="materialList"></div>
 </div>
 
-<!-- MODAL -->
+<!-- MATERIAL DIALOG -->
 <div id="materialDialog">
   <div class="box">
     <h3>Hvad har du øvet?</h3>
     <select id="materialSelect">
       <option value="">– Vælg tidligere –</option>
     </select>
-    <input id="materialInput" type="text" placeholder="Eller skriv nyt materiale">
+    <input type="text" id="materialInput" placeholder="Eller skriv nyt materiale">
     <button onclick="confirmMaterial()">OK</button>
-    <button style="background:#e5e7eb;color:#111" onclick="closeMaterialDialog()">Annuller</button>
+    <button onclick="closeMaterialDialog()">Annuller</button>
   </div>
 </div>
 
 <script>
-// DATA
-const instruments=["Orgel","Trommer","Klaver"];
-let selectedMonth="2026-01";
-let done=JSON.parse(localStorage.getItem("done")||"{}");
-let materials=JSON.parse(localStorage.getItem("materials")||"{}");
-let currentSessionId=null;
+// ---------------- DATA ----------------
+const instruments = ["Orgel","Trommer","Klaver"];
+let selectedMonth = "2026-01";
 
-const schedule={
-"2026-01-01":{note:"",sessions:[["7–8","Orgel"],["11–12","Trommer"],["13–14","Klaver"]]},
-"2026-01-02":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["14–15","Klaver"]]},
-"2026-01-03":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["12–13","Klaver"]]},
-"2026-01-04":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["14–15","Klaver"]]},
-"2026-01-05":{note:"Orgelundervisning kl. 12",sessions:[["7–8","Orgel"],["13–14","Klaver"]]}
+const schedule = { /* uændret – samme som din */ 
+"2026-01-01":{note:"",sessions:[["7–8","Orgel"],["11–12","Trommer"],["11:30–12:30","Trommer"],["13–14","Klaver"]]},
+"2026-01-02":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-03":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-04":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-05":{note:"Orgelundervisning kl. 12",sessions:[["7–8","Orgel"],["13–14","Klaver"],["14:30–15:30","Klaver"]]},
+"2026-01-06":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-07":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-08":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
+"2026-01-09":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-10":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-11":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-12":{note:"Hobro arbejde – ingen orgelundervisning",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"]]},
+"2026-01-13":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-14":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-15":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
+"2026-01-16":{note:"Elever fra kl. 16 – Fri",sessions:[]},
+"2026-01-17":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-18":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-19":{note:"Orgelundervisning kl. 12 + Hobro arbejde",sessions:[["7–8","Orgel"],["13–14","Klaver"],["14:30–15:30","Klaver"]]},
+"2026-01-20":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-21":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-22":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
+"2026-01-23":{note:"Undervisning Kirkemusikskolen kl. 9 + Elever fra kl. 16 – Fri",sessions:[]},
+"2026-01-24":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-25":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-26":{note:"Hobro arbejde – ingen orgelundervisning",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"]]},
+"2026-01-27":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]},
+"2026-01-28":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12–13","Trommer"],["14–15","Klaver"]]},
+"2026-01-29":{note:"Undervisning Hadsund Skole Orkester",sessions:[["7–8","Orgel"],["9–10","Klaver"],["10:30–11:30","Klaver"]]},
+"2026-01-30":{note:"Elever fra kl. 16 – Fri",sessions:[]},
+"2026-01-31":{note:"",sessions:[["7–8","Orgel"],["9–10","Trommer"],["10:30–11:30","Trommer"],["12:30–13:30","Klaver"],["14–15","Klaver"]]}
 };
 
-// HELPERS
+// ---------------- STATE ----------------
+let done = JSON.parse(localStorage.getItem("done") || "{}");
+let materials = JSON.parse(localStorage.getItem("materials") || "{}");
+let currentSessionId = null;
+
+// ---------------- HELPERS ----------------
 function save(){
   localStorage.setItem("done",JSON.stringify(done));
   localStorage.setItem("materials",JSON.stringify(materials));
 }
 
 function totalHours(){
-  return Object.values(done).filter(Boolean).length;
+  return Object.values(done).filter(v=>v).length;
 }
 
 function updateTotal(){
-  const t=totalHours();
-  totalFill.textContent=t+" timer";
-  totalFill.style.width=Math.min(t*6,100)+"%";
+  const t = totalHours();
+  const bar = document.getElementById("totalFill");
+  bar.textContent = t + " timer";
+  bar.style.width = Math.min(t*4,100)+"%";
 }
 
-// CALENDAR
+// ---------------- CALENDAR ----------------
 function renderCalendar(){
-  monthTitle.textContent=selectedMonth;
-  calendar.innerHTML="";
+  document.getElementById("monthTitle").textContent = selectedMonth;
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+
   Object.keys(schedule).forEach(date=>{
     if(!date.startsWith(selectedMonth)) return;
-    const d=schedule[date];
-    const box=document.createElement("div");
-    box.className="day";
-    box.innerHTML=`<div class="day-title">${date}</div>`;
-    if(d.note) box.innerHTML+=`<div class="day-note">${d.note}</div>`;
+    const d = schedule[date];
+    const box = document.createElement("div");
+    box.className = "day";
+    box.innerHTML = `<div class="day-title">${date}</div>`;
+    if(d.note) box.innerHTML += `<div class="day-note">${d.note}</div>`;
+
     d.sessions.forEach((s,i)=>{
-      const id=date+"-"+i;
-      const b=document.createElement("button");
-      b.className="session"+(done[id]?" done":"");
-      b.textContent=`${s[0]} – ${s[1]}`;
-      b.onclick=()=>selectMaterial(id);
+      const id = date+"-"+i;
+      const b = document.createElement("button");
+      b.className = "session"+(done[id]?" done":"");
+      b.textContent = `${s[0]} – ${s[1]}`;
+      b.onclick = ()=>selectMaterial(id);
       box.appendChild(b);
     });
-    calendar.appendChild(box);
+    cal.appendChild(box);
   });
+
   updateTotal();
   updateChart();
 }
 
-// MATERIAL
+// ---------------- MATERIAL SELECT ----------------
 function selectMaterial(id){
   if(done[id]){
-    delete done[id]; delete materials[id];
-    save(); renderCalendar(); return;
+    done[id]=false;
+    delete materials[id];
+    save();
+    renderCalendar();
+    return;
   }
-  currentSessionId=id;
-  materialSelect.innerHTML=`<option value="">– Vælg tidligere –</option>`;
-  [...new Set(Object.values(materials))].forEach(m=>{
-    const o=document.createElement("option");
-    o.value=o.textContent=m;
-    materialSelect.appendChild(o);
+
+  currentSessionId = id;
+  const select = document.getElementById("materialSelect");
+  select.innerHTML = `<option value="">– Vælg tidligere –</option>`;
+  [...new Set(Object.values(materials).filter(Boolean))].forEach(m=>{
+    const o = document.createElement("option");
+    o.value = m;
+    o.textContent = m;
+    select.appendChild(o);
   });
-  materialInput.value="";
-  materialDialog.style.display="block";
+
+  document.getElementById("materialInput").value="";
+  document.getElementById("materialDialog").style.display="block";
 }
 
 function confirmMaterial(){
-  const m=materialInput.value.trim()||materialSelect.value;
+  const m = document.getElementById("materialInput").value.trim()
+          || document.getElementById("materialSelect").value;
   if(!m) return;
   done[currentSessionId]=true;
   materials[currentSessionId]=m;
@@ -269,40 +285,53 @@ function confirmMaterial(){
 }
 
 function closeMaterialDialog(){
-  materialDialog.style.display="none";
+  document.getElementById("materialDialog").style.display="none";
   currentSessionId=null;
 }
 
-// CHART
+// ---------------- CHART ----------------
 let chart;
 function updateChart(){
-  const labels=Object.keys(schedule);
-  const data=instruments.map(inst =>
+  const labels = Object.keys(schedule).filter(d=>d.startsWith(selectedMonth));
+  const data = instruments.map(inst =>
     labels.map(d =>
-      schedule[d].sessions.filter((_,i)=>done[d+"-"+i]&&schedule[d].sessions[i][1]===inst).length
+      schedule[d].sessions.filter((_,i)=>done[d+"-"+i] && schedule[d].sessions[i][1]===inst).length
     )
   );
+
   if(chart) chart.destroy();
-  chart=new Chart(progressChart,{
+  chart = new Chart(document.getElementById("progressChart"),{
     type:"line",
-    data:{labels,datasets:instruments.map((i,idx)=>({label:i,data:data[idx],tension:.3}))},
+    data:{
+      labels,
+      datasets: instruments.map((i,idx)=>({
+        label:i,
+        data:data[idx],
+        tension:0.25
+      }))
+    },
     options:{scales:{y:{beginAtZero:true}}}
   });
 }
 
-// MATERIAL SCREEN
+// ---------------- MATERIAL SCREEN ----------------
 function renderMaterialScreen(){
-  materialList.innerHTML="";
-  const c={};
-  Object.values(materials).forEach(m=>c[m]=(c[m]||0)+1);
-  Object.keys(c).forEach(m=>{
+  const listDiv = document.getElementById("materialList");
+  listDiv.innerHTML="";
+  const count={};
+  Object.keys(materials).forEach(id=>{
+    const m=materials[id];
+    if(!count[m]) count[m]=0;
+    count[m]++;
+  });
+  Object.keys(count).forEach(m=>{
     const d=document.createElement("div");
-    d.textContent=`${m}: ${c[m]} timer`;
-    materialList.appendChild(d);
+    d.textContent=`${m}: ${count[m]} timer`;
+    listDiv.appendChild(d);
   });
 }
 
-// NAV
+// ---------------- NAV ----------------
 function goBackMenu(){
   menu.style.display="block";
   calendarScreen.style.display="none";
@@ -320,6 +349,7 @@ function openMaterialScreen(){
   renderMaterialScreen();
 }
 
+// INIT
 menu.style.display="block";
 </script>
 
