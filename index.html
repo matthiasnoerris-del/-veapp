@@ -10,134 +10,149 @@
 
 <style>
 :root {
-  --orgel: #3b82f6;
-  --trommer: #ef4444;
-  --klaver: #10b981;
-  --teori: #a855f7;
+  /* Ny smart farvepalette */
+  --orgel: #5e5ce6;     /* Indigo */
+  --trommer: #ff375f;   /* Rose */
+  --klaver: #32d74b;    /* Green */
+  --teori: #bf5af2;     /* Purple */
+  --bg: #f2f2f7;
+  --card-bg: #ffffff;
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  background: #f3f4f6;
+  background: var(--bg);
   margin: 0;
   padding: 15px;
-  color: #1f2937;
+  color: #1c1c1e;
 }
 
 .container { max-width: 500px; margin: 0 auto; }
 
-h1 { text-align: center; margin-bottom: 20px; font-weight: 700; }
+h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
 
-/* Instrument knapper med billeder */
+/* Instrument knapper med nye billeder */
 .instrument-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 15px;
+  margin-bottom: 25px;
 }
 
 .log-btn {
   border: none;
-  border-radius: 20px;
-  padding: 10px;
+  border-radius: 24px;
+  padding: 0 0 15px 0;
   color: white;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: 0.1s;
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
   text-align: center;
 }
 
 .log-btn img {
   width: 100%;
-  height: 80px;
+  height: 100px;
   object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  filter: brightness(0.9);
 }
 
-.log-btn:active { transform: scale(0.95); }
+.log-btn:active { transform: scale(0.96); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .bg-orgel { background: var(--orgel); }
 .bg-trommer { background: var(--trommer); }
 .bg-klaver { background: var(--klaver); }
 .bg-teori { background: var(--teori); }
 
 .card {
-  background: white;
-  border-radius: 20px;
+  background: var(--card-bg);
+  border-radius: 28px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .nav-btn {
   width: 100%;
-  padding: 15px;
-  border-radius: 15px;
+  padding: 18px;
+  border-radius: 20px;
   border: none;
-  background: #fff;
-  color: #111827;
-  font-weight: 600;
+  background: #1c1c1e;
+  color: #fff;
+  font-weight: 700;
   cursor: pointer;
   margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: opacity 0.2s;
 }
+
+.nav-btn:active { opacity: 0.8; }
 
 /* Dialog & Inputs */
 #materialDialog {
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.7);
+  background:rgba(0,0,0,0.5);
   z-index: 100;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(10px);
 }
 .dialog-box {
   background:white;
   max-width:320px;
   margin: 10vh auto;
-  padding: 25px;
-  border-radius: 24px;
+  padding: 30px;
+  border-radius: 32px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 
 select, input {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  box-sizing: border-box;
+  padding: 14px;
+  margin-bottom: 15px;
+  border-radius: 14px;
+  border: 1px solid #e5e5ea;
+  background: #f2f2f7;
+  font-family: inherit;
+  font-size: 16px;
 }
 
 .time-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .time-btn {
-  padding: 10px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
+  padding: 12px;
+  border: 2px solid #e5e5ea;
+  border-radius: 14px;
   background: none;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  transition: 0.2s;
 }
 
 .time-btn.active {
-  border-color: #111827;
-  background: #111827;
+  border-color: #1c1c1e;
+  background: #1c1c1e;
   color: white;
 }
 
 /* Materiale visning */
 .history-detail {
-    font-size: 12px;
-    color: #6b7280;
-    margin-left: 10px;
+    font-size: 13px;
+    color: #8e8e93;
+    margin-left: 0;
     list-style-type: none;
     padding: 0;
+    margin-top: 5px;
+}
+.material-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #f2f2f7;
 }
 </style>
 </head>
@@ -149,39 +164,39 @@ select, input {
 
   <div class="instrument-grid">
     <button class="log-btn bg-orgel" onclick="openLog('Orgel')">
-        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?w=200" alt="Orgel">
+        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?auto=format&fit=crop&w=300&q=80" alt="Orgel">
         Orgel
     </button>
     <button class="log-btn bg-trommer" onclick="openLog('Trommer')">
-        <img src="https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=200" alt="Trommer">
+        <img src="https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?auto=format&fit=crop&w=300&q=80" alt="Trommer">
         Trommer
     </button>
     <button class="log-btn bg-klaver" onclick="openLog('Klaver')">
-        <img src="https://images.unsplash.com/photo-1520522118961-14ad20a0307c?w=200" alt="Klaver">
+        <img src="https://images.unsplash.com/photo-1520522118961-14ad20a0307c?auto=format&fit=crop&w=300&q=80" alt="Klaver">
         Klaver
     </button>
     <button class="log-btn bg-teori" onclick="openLog('Hørelære/teori')">
-        <img src="https://images.unsplash.com/photo-1507838596058-a7628c734ad5?w=200" alt="Teori">
+        <img src="https://images.unsplash.com/photo-1507838596058-a7628c734ad5?auto=format&fit=crop&w=300&q=80" alt="Teori">
         Hørelære
     </button>
   </div>
 
   <div class="card">
-    <canvas id="progressChart" height="180"></canvas>
+    <canvas id="progressChart" height="220"></canvas>
   </div>
 
-  <button class="nav-btn" onclick="showScreen('material-screen')">📂 Gå til Øve-materiale</button>
+  <button class="nav-btn" onclick="showScreen('material-screen')">Gå til Øve-materiale</button>
 </div>
 
 <div id="material-screen" class="container" style="display:none">
-    <button class="nav-btn" onclick="showScreen('main-screen')">⬅ Tilbage</button>
-    <h1>Øve-materiale</h1>
+    <button class="nav-btn" style="background:#8e8e93" onclick="showScreen('main-screen')">⬅ Tilbage</button>
+    <h1>Materiale</h1>
     <div id="materialContent"></div>
 </div>
 
 <div id="materialDialog">
   <div class="dialog-box">
-    <h3 id="dialogTitle" style="margin-top:0"></h3>
+    <h2 id="dialogTitle" style="margin-top:0; text-align:center;"></h2>
     
     <div class="time-selector">
         <button id="btn30" class="time-btn" onclick="setDuration(0.5)">30 min</button>
@@ -189,23 +204,23 @@ select, input {
     </div>
 
     <select id="materialSelect" onchange="if(this.value) document.getElementById('materialInput').value = ''">
-      <option value="">-- Vælg tidligere --</option>
+      <option value="">-- Tidligere materiale --</option>
     </select>
     
-    <input type="text" id="materialInput" placeholder="Eller skriv nyt...">
+    <input type="text" id="materialInput" placeholder="Nyt materiale...">
     
-    <button class="save-btn" style="width:100%; background:#111827; color:#fff; padding:15px; border-radius:12px; border:none; font-weight:700;" onclick="confirmLog()">GEM REGISTRERING</button>
-    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:10px; color:#9ca3af; cursor:pointer;">Annuller</button>
+    <button class="nav-btn" style="margin-top:10px" onclick="confirmLog()">Gem</button>
+    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:5px; color:#8e8e93; cursor:pointer; font-weight:600;">Fortryd</button>
   </div>
 </div>
 
 <script>
-let logs = JSON.parse(localStorage.getItem("music_logs_v4") || "[]");
+let logs = JSON.parse(localStorage.getItem("music_logs_v5") || "[]");
 let currentInstrument = "";
 let currentDuration = 1;
 
 function save() {
-    localStorage.setItem("music_logs_v4", JSON.stringify(logs));
+    localStorage.setItem("music_logs_v5", JSON.stringify(logs));
     updateUI();
 }
 
@@ -228,7 +243,7 @@ function openLog(inst) {
     document.getElementById("materialInput").value = "";
     
     const select = document.getElementById("materialSelect");
-    select.innerHTML = '<option value="">-- Vælg tidligere --</option>';
+    select.innerHTML = '<option value="">-- Tidligere materiale --</option>';
     
     const existing = [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))];
     existing.forEach(m => {
@@ -247,7 +262,7 @@ function closeDialog() {
 function confirmLog() {
     const sel = document.getElementById("materialSelect").value;
     const inp = document.getElementById("materialInput").value.trim();
-    const finalMaterial = inp || sel || "Generel øvning";
+    const finalMaterial = inp || sel || "Øvning";
 
     logs.push({
         date: new Date().toLocaleDateString('da-DK'),
@@ -274,8 +289,8 @@ function renderMaterials() {
         const instLogs = logs.filter(l => l.instrument === inst);
         if(instLogs.length === 0) return;
 
-        let html = `<div class="card" style="border-top: 5px solid var(--${getVarName(inst)})">
-                      <h3 style="color: var(--${getVarName(inst)}); margin-top:0">${inst}</h3>`;
+        let html = `<div class="card">
+                      <h3 style="color: var(--${getVarName(inst)}); margin-top:0; font-size:22px;">${inst}</h3>`;
         
         const summary = {};
         instLogs.forEach(l => {
@@ -285,10 +300,10 @@ function renderMaterials() {
         });
 
         for (const [name, data] of Object.entries(summary)) {
-            html += `<div style="margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">
-                        <div style="display:flex; justify-content:space-between; font-weight:600;">
+            html += `<div class="material-row">
+                        <div style="display:flex; justify-content:space-between; font-weight:700;">
                             <span>${name}</span>
-                            <span>${data.hours} timer</span>
+                            <span>${data.hours}t</span>
                         </div>
                         <ul class="history-detail">
                             ${data.dates.map(d => `<li>• ${d}</li>`).join('')}
@@ -306,40 +321,59 @@ function getVarName(inst) {
 }
 
 function getInstColor(inst) {
-    if(inst === "Orgel") return "#3b82f6";
-    if(inst === "Trommer") return "#ef4444";
-    if(inst === "Klaver") return "#10b981";
-    return "#a855f7";
+    const colors = {
+        "Orgel": "#5e5ce6",
+        "Trommer": "#ff375f",
+        "Klaver": "#32d74b",
+        "Hørelære/teori": "#bf5af2"
+    };
+    return colors[inst] || "#000";
 }
 
 let chart;
 function updateChart() {
     const days = [];
-    for(let i=6; i>=0; i--) {
+    for(let i=13; i>=0; i--) { // Viser de sidste 14 dage
         const d = new Date();
         d.setDate(d.getDate() - i);
         days.push(d.toISOString().split('T')[0]);
     }
 
-    const labels = days.map(d => new Date(d).toLocaleDateString('da-DK', {weekday: 'short'}));
-    const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => ({
-        label: inst,
-        data: days.map(d => {
-            return logs.filter(l => l.isoDate === d && l.instrument === inst)
-                       .reduce((sum, current) => sum + current.hours, 0);
-        }),
-        backgroundColor: getInstColor(inst),
-        borderRadius: 4
-    }));
+    const labels = days.map(d => {
+        const date = new Date(d);
+        return date.toLocaleDateString('da-DK', {day: 'numeric', month: 'short'});
+    });
+
+    const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
+        const color = getInstColor(inst);
+        return {
+            label: inst,
+            data: days.map(d => {
+                return logs.filter(l => l.isoDate === d && l.instrument === inst)
+                           .reduce((sum, current) => sum + current.hours, 0);
+            }),
+            borderColor: color,
+            backgroundColor: color + "20", // Gennemsigtig baggrund til bølgen
+            fill: true,
+            tension: 0.4, // Dette skaber de bløde bølge-kurver
+            pointRadius: 2
+        };
+    });
 
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById("progressChart"), {
-        type: 'bar',
+        type: 'line',
         data: { labels, datasets },
         options: {
             responsive: true,
-            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } }
+            interaction: { mode: 'index', intersect: false },
+            scales: { 
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: '#e5e5ea' } } 
+            },
+            plugins: { 
+                legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: {size: 11, weight: '600'} } }
+            }
         }
     });
 }
