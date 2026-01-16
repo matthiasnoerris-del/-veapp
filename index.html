@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Musik Logbog</title>
+<title>Musik Logbog Pro</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
   --orgel: #3b82f6;
   --trommer: #ef4444;
   --klaver: #10b981;
+  --teori: #a855f7;
 }
 
 body {
@@ -27,28 +28,39 @@ body {
 
 h1 { text-align: center; margin-bottom: 20px; font-weight: 700; }
 
-/* De 3 instrument knapper */
+/* Instrument knapper med billeder */
 .instrument-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 20px;
 }
 
 .log-btn {
   border: none;
-  border-radius: 16px;
-  padding: 18px 5px;
+  border-radius: 20px;
+  padding: 10px;
   color: white;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   transition: 0.1s;
+  text-align: center;
 }
+
+.log-btn img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
 .log-btn:active { transform: scale(0.95); }
 .bg-orgel { background: var(--orgel); }
 .bg-trommer { background: var(--trommer); }
 .bg-klaver { background: var(--klaver); }
+.bg-teori { background: var(--teori); }
 
 .card {
   background: white;
@@ -58,25 +70,32 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 700; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-h2 { font-size: 16px; margin-top: 0; margin-bottom: 15px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; }
+.nav-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 15px;
+  border: none;
+  background: #fff;
+  color: #111827;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
 
-/* Materiale Liste Design */
-.material-group { margin-bottom: 15px; border-left: 4px solid #eee; padding-left: 12px; }
-.material-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
-
-/* Dialog */
+/* Dialog & Inputs */
 #materialDialog {
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,0.7);
   z-index: 100;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(5px);
 }
 .dialog-box {
   background:white;
-  max-width:300px;
-  margin: 15vh auto;
+  max-width:320px;
+  margin: 10vh auto;
   padding: 25px;
   border-radius: 24px;
 }
@@ -87,85 +106,134 @@ select, input {
   margin-bottom: 12px;
   border-radius: 10px;
   border: 1px solid #ddd;
-  font-family: inherit;
+  box-sizing: border-box;
 }
 
-.save-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
+.time-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.time-btn {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.time-btn.active {
+  border-color: #111827;
   background: #111827;
   color: white;
-  font-weight: 600;
-  cursor: pointer;
+}
+
+/* Materiale visning */
+.history-detail {
+    font-size: 12px;
+    color: #6b7280;
+    margin-left: 10px;
+    list-style-type: none;
+    padding: 0;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div id="main-screen" class="container">
   <h1>ØveApp</h1>
 
   <div class="instrument-grid">
-    <button class="log-btn bg-orgel" onclick="openLog('Orgel')">🎹<br>Orgel</button>
-    <button class="log-btn bg-trommer" onclick="openLog('Trommer')">🥁<br>Trommer</button>
-    <button class="log-btn bg-klaver" onclick="openLog('Klaver')">🎹<br>Klaver</button>
+    <button class="log-btn bg-orgel" onclick="openLog('Orgel')">
+        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?w=200" alt="Orgel">
+        Orgel
+    </button>
+    <button class="log-btn bg-trommer" onclick="openLog('Trommer')">
+        <img src="https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=200" alt="Trommer">
+        Trommer
+    </button>
+    <button class="log-btn bg-klaver" onclick="openLog('Klaver')">
+        <img src="https://images.unsplash.com/photo-1520522118961-14ad20a0307c?w=200" alt="Klaver">
+        Klaver
+    </button>
+    <button class="log-btn bg-teori" onclick="openLog('Hørelære/teori')">
+        <img src="https://images.unsplash.com/photo-1507838596058-a7628c734ad5?w=200" alt="Teori">
+        Hørelære
+    </button>
   </div>
 
   <div class="card">
-    <h2>Aktivitet (Timer)</h2>
     <canvas id="progressChart" height="180"></canvas>
   </div>
 
-  <div class="card">
-    <h2>Øve-materiale (Total tid)</h2>
+  <button class="nav-btn" onclick="showScreen('material-screen')">📂 Gå til Øve-materiale</button>
+</div>
+
+<div id="material-screen" class="container" style="display:none">
+    <button class="nav-btn" onclick="showScreen('main-screen')">⬅ Tilbage</button>
+    <h1>Øve-materiale</h1>
     <div id="materialContent"></div>
-  </div>
 </div>
 
 <div id="materialDialog">
   <div class="dialog-box">
     <h3 id="dialogTitle" style="margin-top:0"></h3>
     
-    <label style="font-size: 12px; color: #666;">Vælg tidligere materiale:</label>
-    <select id="materialSelect">
-      <option value="">-- Nyt materiale --</option>
+    <div class="time-selector">
+        <button id="btn30" class="time-btn" onclick="setDuration(0.5)">30 min</button>
+        <button id="btn60" class="time-btn active" onclick="setDuration(1)">1 time</button>
+    </div>
+
+    <select id="materialSelect" onchange="if(this.value) document.getElementById('materialInput').value = ''">
+      <option value="">-- Vælg tidligere --</option>
     </select>
     
-    <label style="font-size: 12px; color: #666;">Eller skriv nyt:</label>
-    <input type="text" id="materialInput" placeholder="F.eks. Bach eller Skalaer">
+    <input type="text" id="materialInput" placeholder="Eller skriv nyt...">
     
-    <button class="save-btn" onclick="confirmLog()">Gem 1 time</button>
+    <button class="save-btn" style="width:100%; background:#111827; color:#fff; padding:15px; border-radius:12px; border:none; font-weight:700;" onclick="confirmLog()">GEM REGISTRERING</button>
     <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:10px; color:#9ca3af; cursor:pointer;">Annuller</button>
   </div>
 </div>
 
 <script>
-// Data håndtering
-let logs = JSON.parse(localStorage.getItem("music_logs_v3") || "[]");
+let logs = JSON.parse(localStorage.getItem("music_logs_v4") || "[]");
 let currentInstrument = "";
+let currentDuration = 1;
 
 function save() {
-    localStorage.setItem("music_logs_v3", JSON.stringify(logs));
+    localStorage.setItem("music_logs_v4", JSON.stringify(logs));
     updateUI();
+}
+
+function showScreen(id) {
+    document.getElementById('main-screen').style.display = (id === 'main-screen' ? 'block' : 'none');
+    document.getElementById('material-screen').style.display = (id === 'material-screen' ? 'block' : 'none');
+    if(id === 'material-screen') renderMaterials();
+}
+
+function setDuration(val) {
+    currentDuration = val;
+    document.getElementById('btn30').classList.toggle('active', val === 0.5);
+    document.getElementById('btn60').classList.toggle('active', val === 1);
 }
 
 function openLog(inst) {
     currentInstrument = inst;
-    document.getElementById("dialogTitle").innerText = "Øvet " + inst;
+    setDuration(1);
+    document.getElementById("dialogTitle").innerText = inst;
     document.getElementById("materialInput").value = "";
     
-    // Opdater dropdown med materialer kun for dette instrument
     const select = document.getElementById("materialSelect");
-    select.innerHTML = '<option value="">-- Nyt materiale --</option>';
+    select.innerHTML = '<option value="">-- Vælg tidligere --</option>';
     
     const existing = [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))];
     existing.forEach(m => {
         const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = m;
+        opt.value = m; opt.textContent = m;
         select.appendChild(opt);
     });
 
@@ -181,20 +249,19 @@ function confirmLog() {
     const inp = document.getElementById("materialInput").value.trim();
     const finalMaterial = inp || sel || "Generel øvning";
 
-    const entry = {
-        date: new Date().toISOString().split('T')[0],
+    logs.push({
+        date: new Date().toLocaleDateString('da-DK'),
+        isoDate: new Date().toISOString().split('T')[0],
         instrument: currentInstrument,
         material: finalMaterial,
-        hours: 1
-    };
+        hours: currentDuration
+    });
 
-    logs.push(entry);
     save();
     closeDialog();
 }
 
 function updateUI() {
-    renderMaterials();
     updateChart();
 }
 
@@ -202,29 +269,47 @@ function renderMaterials() {
     const container = document.getElementById("materialContent");
     container.innerHTML = "";
     
-    ["Orgel", "Trommer", "Klaver"].forEach(inst => {
+    const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
+    insts.forEach(inst => {
         const instLogs = logs.filter(l => l.instrument === inst);
         if(instLogs.length === 0) return;
 
-        let html = `<div class="material-group" style="border-left-color: var(--${inst.toLowerCase()})">
-                      <strong style="color: var(--${inst.toLowerCase()})">${inst}</strong>`;
+        let html = `<div class="card" style="border-top: 5px solid var(--${getVarName(inst)})">
+                      <h3 style="color: var(--${getVarName(inst)}); margin-top:0">${inst}</h3>`;
         
-        // Find unikke materialer og tæl timer
         const summary = {};
         instLogs.forEach(l => {
-            summary[l.material] = (summary[l.material] || 0) + 1;
+            if(!summary[l.material]) summary[l.material] = { hours: 0, dates: [] };
+            summary[l.material].hours += l.hours;
+            summary[l.material].dates.push(`${l.date} (${l.hours === 0.5 ? '30m' : '1t'})`);
         });
 
-        for (const [name, hours] of Object.entries(summary)) {
-            html += `<div class="material-item">
-                        <span>${name}</span>
-                        <strong>${hours} t.</strong>
+        for (const [name, data] of Object.entries(summary)) {
+            html += `<div style="margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">
+                        <div style="display:flex; justify-content:space-between; font-weight:600;">
+                            <span>${name}</span>
+                            <span>${data.hours} timer</span>
+                        </div>
+                        <ul class="history-detail">
+                            ${data.dates.map(d => `<li>• ${d}</li>`).join('')}
+                        </ul>
                      </div>`;
         }
-        
         html += `</div>`;
         container.innerHTML += html;
     });
+}
+
+function getVarName(inst) {
+    if(inst.includes("Hørelære")) return "teori";
+    return inst.toLowerCase();
+}
+
+function getInstColor(inst) {
+    if(inst === "Orgel") return "#3b82f6";
+    if(inst === "Trommer") return "#ef4444";
+    if(inst === "Klaver") return "#10b981";
+    return "#a855f7";
 }
 
 let chart;
@@ -237,11 +322,13 @@ function updateChart() {
     }
 
     const labels = days.map(d => new Date(d).toLocaleDateString('da-DK', {weekday: 'short'}));
-    
-    const datasets = ["Orgel", "Trommer", "Klaver"].map(inst => ({
+    const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => ({
         label: inst,
-        data: days.map(d => logs.filter(l => l.date === d && l.instrument === inst).length),
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--'+inst.toLowerCase()),
+        data: days.map(d => {
+            return logs.filter(l => l.isoDate === d && l.instrument === inst)
+                       .reduce((sum, current) => sum + current.hours, 0);
+        }),
+        backgroundColor: getInstColor(inst),
         borderRadius: 4
     }));
 
@@ -251,13 +338,12 @@ function updateChart() {
         data: { labels, datasets },
         options: {
             responsive: true,
-            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: {stepSize: 1} } },
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } }
         }
     });
 }
 
-// Start
 updateUI();
 </script>
 
