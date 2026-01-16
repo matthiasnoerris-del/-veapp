@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Min Øve-Log</title>
+<title>Musik Logbog</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -25,34 +25,31 @@ body {
 
 .container { max-width: 500px; margin: 0 auto; }
 
-h1 { text-align: center; margin-bottom: 25px; font-weight: 700; }
+h1 { text-align: center; margin-bottom: 20px; font-weight: 700; }
 
-/* De 3 store knapper */
-.quick-log {
+/* De 3 instrument knapper */
+.instrument-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .log-btn {
   border: none;
   border-radius: 16px;
-  padding: 20px 10px;
+  padding: 18px 5px;
   color: white;
   font-weight: 700;
-  font-size: 14px;
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: 0.1s;
 }
-
-.log-btn:active { transform: scale(0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.log-btn:active { transform: scale(0.95); }
 .bg-orgel { background: var(--orgel); }
 .bg-trommer { background: var(--trommer); }
 .bg-klaver { background: var(--klaver); }
 
-/* Sektioner */
 .card {
   background: white;
   border-radius: 20px;
@@ -61,24 +58,11 @@ h1 { text-align: center; margin-bottom: 25px; font-weight: 700; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; display: flex; justify-content: space-between; }
+h2 { font-size: 16px; margin-top: 0; margin-bottom: 15px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; }
 
-.history-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.history-item:last-child { border-bottom: none; }
-
-.badge {
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
+/* Materiale Liste Design */
+.material-group { margin-bottom: 15px; border-left: 4px solid #eee; padding-left: 12px; }
+.material-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
 
 /* Dialog */
 #materialDialog {
@@ -87,24 +71,23 @@ h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; display: flex; justify
   inset:0;
   background:rgba(0,0,0,0.6);
   z-index: 100;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(3px);
 }
 .dialog-box {
   background:white;
   max-width:300px;
-  margin: 20vh auto;
+  margin: 15vh auto;
   padding: 25px;
   border-radius: 24px;
-  text-align: center;
 }
 
-input {
+select, input {
   width: 100%;
   padding: 12px;
-  margin: 15px 0;
-  border-radius: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
   border: 1px solid #ddd;
-  box-sizing: border-box;
+  font-family: inherit;
 }
 
 .save-btn {
@@ -125,96 +108,94 @@ input {
 <div class="container">
   <h1>ØveApp</h1>
 
-  <div class="quick-log">
-    <button class="log-btn bg-orgel" onclick="openDialog('Orgel')">🎹<br>Orgel</button>
-    <button class="log-btn bg-trommer" onclick="openDialog('Trommer')">🥁<br>Trommer</button>
-    <button class="log-btn bg-klaver" onclick="openDialog('Klaver')">🎹<br>Klaver</button>
+  <div class="instrument-grid">
+    <button class="log-btn bg-orgel" onclick="openLog('Orgel')">🎹<br>Orgel</button>
+    <button class="log-btn bg-trommer" onclick="openLog('Trommer')">🥁<br>Trommer</button>
+    <button class="log-btn bg-klaver" onclick="openLog('Klaver')">🎹<br>Klaver</button>
   </div>
 
   <div class="card">
     <h2>Aktivitet (Timer)</h2>
-    <canvas id="progressChart" height="200"></canvas>
+    <canvas id="progressChart" height="180"></canvas>
   </div>
 
   <div class="card">
-    <h2>Øve-materiale</h2>
+    <h2>Øve-materiale (Total tid)</h2>
     <div id="materialContent"></div>
-  </div>
-
-  <div class="card">
-    <h2>Seneste øvninger</h2>
-    <div id="historyList"></div>
   </div>
 </div>
 
 <div id="materialDialog">
   <div class="dialog-box">
-    <h3 id="dialogTitle" style="margin:0"></h3>
-    <input type="text" id="materialInput" placeholder="Hvad har du øvet?">
-    <button class="save-btn" onclick="saveLog()">Gem 1 time</button>
-    <button onclick="closeDialog()" style="background:none; border:none; margin-top:10px; color:#6b7280; cursor:pointer;">Annuller</button>
+    <h3 id="dialogTitle" style="margin-top:0"></h3>
+    
+    <label style="font-size: 12px; color: #666;">Vælg tidligere materiale:</label>
+    <select id="materialSelect">
+      <option value="">-- Nyt materiale --</option>
+    </select>
+    
+    <label style="font-size: 12px; color: #666;">Eller skriv nyt:</label>
+    <input type="text" id="materialInput" placeholder="F.eks. Bach eller Skalaer">
+    
+    <button class="save-btn" onclick="confirmLog()">Gem 1 time</button>
+    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:10px; color:#9ca3af; cursor:pointer;">Annuller</button>
   </div>
 </div>
 
 <script>
-let logs = JSON.parse(localStorage.getItem("music_logs_final") || "[]");
+// Data håndtering
+let logs = JSON.parse(localStorage.getItem("music_logs_v3") || "[]");
 let currentInstrument = "";
 
 function save() {
-    localStorage.setItem("music_logs_final", JSON.stringify(logs));
+    localStorage.setItem("music_logs_v3", JSON.stringify(logs));
     updateUI();
 }
 
-function openDialog(inst) {
+function openLog(inst) {
     currentInstrument = inst;
-    document.getElementById("dialogTitle").innerText = inst;
+    document.getElementById("dialogTitle").innerText = "Øvet " + inst;
     document.getElementById("materialInput").value = "";
+    
+    // Opdater dropdown med materialer kun for dette instrument
+    const select = document.getElementById("materialSelect");
+    select.innerHTML = '<option value="">-- Nyt materiale --</option>';
+    
+    const existing = [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))];
+    existing.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        select.appendChild(opt);
+    });
+
     document.getElementById("materialDialog").style.display = "block";
-    document.getElementById("materialInput").focus();
 }
 
 function closeDialog() {
     document.getElementById("materialDialog").style.display = "none";
 }
 
-function saveLog() {
-    const mat = document.getElementById("materialInput").value.trim() || "Generel øvning";
+function confirmLog() {
+    const sel = document.getElementById("materialSelect").value;
+    const inp = document.getElementById("materialInput").value.trim();
+    const finalMaterial = inp || sel || "Generel øvning";
+
     const entry = {
-        id: Date.now(),
         date: new Date().toISOString().split('T')[0],
-        displayDate: new Date().toLocaleDateString('da-DK', {day: 'numeric', month: 'short'}),
         instrument: currentInstrument,
-        material: mat
+        material: finalMaterial,
+        hours: 1
     };
+
     logs.push(entry);
     save();
     closeDialog();
 }
 
-// Opdaterer alt på skærmen
 function updateUI() {
-    renderHistory();
     renderMaterials();
     updateChart();
-}
-
-function renderHistory() {
-    const list = document.getElementById("historyList");
-    list.innerHTML = "";
-    // Vis kun de 5 seneste
-    [...logs].reverse().slice(0, 5).forEach(l => {
-        list.innerHTML += `
-            <div class="history-item">
-                <div>
-                    <strong>${l.displayDate}</strong><br>
-                    <span style="font-size:12px; color:#6b7280">${l.material}</span>
-                </div>
-                <span class="badge" style="background:${getInstColor(l.instrument)}20; color:${getInstColor(l.instrument)}">
-                    ${l.instrument}
-                </span>
-            </div>
-        `;
-    });
 }
 
 function renderMaterials() {
@@ -225,24 +206,29 @@ function renderMaterials() {
         const instLogs = logs.filter(l => l.instrument === inst);
         if(instLogs.length === 0) return;
 
-        const uniqueMaterials = [...new Set(instLogs.map(l => l.material))];
-        let html = `<div style="margin-bottom:15px;">
-                      <strong style="color:${getInstColor(inst)}">${inst}:</strong> 
-                      <span style="font-size:13px; color:#4b5563;">${uniqueMaterials.join(", ")}</span>
-                    </div>`;
+        let html = `<div class="material-group" style="border-left-color: var(--${inst.toLowerCase()})">
+                      <strong style="color: var(--${inst.toLowerCase()})">${inst}</strong>`;
+        
+        // Find unikke materialer og tæl timer
+        const summary = {};
+        instLogs.forEach(l => {
+            summary[l.material] = (summary[l.material] || 0) + 1;
+        });
+
+        for (const [name, hours] of Object.entries(summary)) {
+            html += `<div class="material-item">
+                        <span>${name}</span>
+                        <strong>${hours} t.</strong>
+                     </div>`;
+        }
+        
+        html += `</div>`;
         container.innerHTML += html;
     });
 }
 
-function getInstColor(inst) {
-    if(inst === "Orgel") return "#3b82f6";
-    if(inst === "Trommer") return "#ef4444";
-    return "#10b981";
-}
-
 let chart;
 function updateChart() {
-    // Vi viser de sidste 7 dage på grafen for at gøre den læselig
     const days = [];
     for(let i=6; i>=0; i--) {
         const d = new Date();
@@ -255,8 +241,8 @@ function updateChart() {
     const datasets = ["Orgel", "Trommer", "Klaver"].map(inst => ({
         label: inst,
         data: days.map(d => logs.filter(l => l.date === d && l.instrument === inst).length),
-        backgroundColor: getInstColor(inst),
-        borderRadius: 5
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--'+inst.toLowerCase()),
+        borderRadius: 4
     }));
 
     if(chart) chart.destroy();
@@ -266,12 +252,12 @@ function updateChart() {
         options: {
             responsive: true,
             scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: {stepSize: 1} } },
-            plugins: { legend: { display: false } }
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
         }
     });
 }
 
-// Start appen
+// Start
 updateUI();
 </script>
 
