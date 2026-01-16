@@ -29,7 +29,6 @@ body {
 
 h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
 
-/* Instrument knapper */
 .instrument-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -58,7 +57,7 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   position: absolute;
   top: 0;
   left: 0;
-  filter: brightness(0.65);
+  filter: brightness(0.6);
 }
 
 .log-btn span {
@@ -89,23 +88,43 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   cursor: pointer;
 }
 
-/* Slette-knap stil */
+/* Materiale-liste styling */
+.material-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  cursor: pointer;
+  border-bottom: 1px solid #f2f2f7;
+}
+
+.material-header strong { font-size: 16px; }
+
+.history-list {
+  display: none;
+  padding: 10px;
+  background: #f9f9fb;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.history-item:last-child { border-bottom: none; }
+
 .delete-btn {
   background: none;
   border: none;
   color: #ff3b30;
   cursor: pointer;
-  font-size: 14px;
   padding: 5px;
-  margin-left: 10px;
-}
-
-.log-entry {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f2f2f7;
-  padding: 10px 0;
 }
 
 /* Dialog */
@@ -147,14 +166,9 @@ select, input {
   border-radius: 14px;
   background: none;
   font-weight: 700;
-  cursor: pointer;
 }
 
-.time-btn.active {
-  background: #1c1c1e;
-  color: white;
-  border-color: #1c1c1e;
-}
+.time-btn.active { background: #1c1c1e; color: white; border-color: #1c1c1e; }
 </style>
 </head>
 
@@ -165,19 +179,19 @@ select, input {
 
   <div class="instrument-grid">
     <button class="log-btn" style="background-color: var(--orgel)" onclick="openLog('Orgel')">
-        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?w=500&q=80">
+        <img src="https://images.pexels.com/photos/3722709/pexels-photo-3722709.jpeg?auto=compress&cs=tinysrgb&w=400">
         <span>Orgel</span>
     </button>
     <button class="log-btn" style="background-color: var(--trommer)" onclick="openLog('Trommer')">
-        <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=500&q=80">
+        <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=400">
         <span>Trommer</span>
     </button>
     <button class="log-btn" style="background-color: var(--klaver)" onclick="openLog('Klaver')">
-        <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=500&q=80">
+        <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=400">
         <span>Klaver</span>
     </button>
     <button class="log-btn" style="background-color: var(--teori)" onclick="openLog('Hørelære/teori')">
-        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=500&q=80">
+        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=400">
         <span>Hørelære</span>
     </button>
   </div>
@@ -186,7 +200,7 @@ select, input {
     <canvas id="progressChart" height="220"></canvas>
   </div>
 
-  <button class="nav-btn" onclick="showScreen('material-screen')">Gå til Øve-materiale</button>
+  <button class="nav-btn" onclick="showScreen('material-screen')">📂 Se Øve-materiale</button>
 </div>
 
 <div id="material-screen" class="container" style="display:none">
@@ -203,19 +217,18 @@ select, input {
     </div>
     <select id="materialSelect"><option value="">-- Tidligere materiale --</option></select>
     <input type="text" id="materialInput" placeholder="Nyt materiale...">
-    <button class="nav-btn" onclick="confirmLog()">Gem Øvning</button>
+    <button class="nav-btn" onclick="confirmLog()">Gem</button>
     <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:10px; color:#8e8e93; cursor:pointer;">Fortryd</button>
   </div>
 </div>
 
 <script>
-// Vi bruger v7 for at sikre en frisk start med slette-funktion
-let logs = JSON.parse(localStorage.getItem("music_logs_v7") || "[]");
+let logs = JSON.parse(localStorage.getItem("music_logs_v8") || "[]");
 let currentInstrument = "";
 let currentDuration = 1;
 
 function save() {
-    localStorage.setItem("music_logs_v7", JSON.stringify(logs));
+    localStorage.setItem("music_logs_v8", JSON.stringify(logs));
     updateUI();
 }
 
@@ -250,7 +263,7 @@ function closeDialog() { document.getElementById("materialDialog").style.display
 function confirmLog() {
     const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
     logs.push({
-        id: Date.now(), // Unikt ID til sletning
+        id: Date.now(),
         date: new Date().toLocaleDateString('da-DK'),
         isoDate: new Date().toISOString().split('T')[0],
         instrument: currentInstrument,
@@ -261,12 +274,18 @@ function confirmLog() {
     closeDialog();
 }
 
-function deleteEntry(id) {
-    if(confirm("Vil du slette denne øvning?")) {
+function deleteEntry(id, event) {
+    event.stopPropagation();
+    if(confirm("Slet denne registrering?")) {
         logs = logs.filter(l => l.id !== id);
         save();
         renderMaterials();
     }
+}
+
+function toggleHistory(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
 function renderMaterials() {
@@ -278,15 +297,28 @@ function renderMaterials() {
         
         let html = `<div class="card"><h3 style="margin-top:0">${inst}</h3>`;
         
-        // Sorter logs så de nyeste er øverst
-        instLogs.slice().reverse().forEach(l => {
+        // Gruppér efter materiale
+        const grouped = {};
+        instLogs.forEach(l => {
+            if(!grouped[l.material]) grouped[l.material] = { total: 0, entries: [] };
+            grouped[l.material].total += l.hours;
+            grouped[l.material].entries.push(l);
+        });
+
+        Object.keys(grouped).forEach((mat, index) => {
+            const divId = `hist-${inst}-${index}`;
             html += `
-            <div class="log-entry">
-                <div>
-                    <div style="font-weight:700">${l.material}</div>
-                    <div style="font-size:12px; color:#8e8e93;">${l.date} (${l.hours === 0.5 ? '30m' : '1t'})</div>
-                </div>
-                <button class="delete-btn" onclick="deleteEntry(${l.id})">🗑️</button>
+            <div class="material-header" onclick="toggleHistory('${divId}')">
+                <strong>${mat} (${grouped[mat].total} t.)</strong>
+                <span>▼</span>
+            </div>
+            <div id="${divId}" class="history-list">
+                ${grouped[mat].entries.slice().reverse().map(e => `
+                    <div class="history-item">
+                        <span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span>
+                        <button class="delete-btn" onclick="deleteEntry(${e.id}, event)">🗑️</button>
+                    </div>
+                `).join('')}
             </div>`;
         });
         
