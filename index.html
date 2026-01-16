@@ -30,7 +30,7 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
 
 .card { background: white; border-radius: 28px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-/* Nyt Materiale Design */
+/* Materiale Design med grafik */
 .inst-card { background: white; border-radius: 24px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .inst-banner { padding: 15px 20px; color: white; font-weight: 800; font-size: 18px; display: flex; justify-content: space-between; }
 .banner-orgel { background: linear-gradient(135deg, #5e5ce6, #7e7cf6); }
@@ -43,15 +43,15 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
 .history-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #eee; }
 
 .nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+.backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 20px; }
 
+/* Dialog */
 #materialDialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(10px); }
 .dialog-box { background:white; max-width:320px; margin: 15vh auto; padding: 30px; border-radius: 32px; }
-
 select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; }
 .time-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .time-btn { padding: 12px; border: 2px solid #e5e5ea; border-radius: 14px; background: none; font-weight: 700; }
 .time-btn.active { background: #1c1c1e; color: white; border-color: #1c1c1e; }
-.backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 20px; }
 </style>
 </head>
 
@@ -62,7 +62,7 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
 
   <div class="instrument-grid">
     <button class="log-btn" style="background-color: var(--orgel)" onclick="openLog('Orgel')">
-        <img src="https://images.unsplash.com/photo-1518091041982-a1567174473c?auto=format&fit=crop&w=400&q=80">
+        <img src="AarhusDom-Orgel-3%20(3).jpg">
         <span>Orgel</span>
     </button>
     <button class="log-btn" style="background-color: var(--trommer)" onclick="openLog('Trommer')">
@@ -111,6 +111,7 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
 </div>
 
 <script>
+// Gemme-logik
 const STORAGE_KEY = "music_logs_final";
 let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 let currentInstrument = "";
@@ -121,16 +122,10 @@ function save() {
     updateUI();
 }
 
-function exportData() {
-    const data = JSON.stringify(logs);
-    prompt("Kopier backup-kode:", data);
-}
-
+function exportData() { prompt("Kopier din backup-kode:", JSON.stringify(logs)); }
 function importData() {
-    const data = prompt("Indsæt backup-kode:");
-    if(data) {
-        try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); }
-    }
+    const data = prompt("Indsæt din backup-kode:");
+    if(data) { try { logs = JSON.parse(data); save(); alert("Data er genindlæst!"); } catch(e) { alert("Fejl i koden!"); } }
 }
 
 function showScreen(id) {
@@ -146,8 +141,7 @@ function setDuration(val) {
 }
 
 function openLog(inst) {
-    currentInstrument = inst;
-    setDuration(1);
+    currentInstrument = inst; setDuration(1);
     document.getElementById("dialogTitle").innerText = inst;
     document.getElementById("materialInput").value = "";
     const select = document.getElementById("materialSelect");
@@ -171,13 +165,12 @@ function confirmLog() {
         material: finalMaterial,
         hours: currentDuration
     });
-    save();
-    closeDialog();
+    save(); closeDialog();
 }
 
 function deleteEntry(id, event) {
     event.stopPropagation();
-    if(confirm("Slet denne?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+    if(confirm("Vil du slette denne registrering?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
 }
 
 function toggleHistory(id) {
@@ -190,6 +183,7 @@ function renderMaterials() {
     container.innerHTML = "";
     const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
     const colors = ["orgel", "trommer", "klaver", "teori"];
+    const icons = ["🎹", "🥁", "🎹", "🎼"];
 
     insts.forEach((inst, i) => {
         const instLogs = logs.filter(l => l.instrument === inst);
@@ -198,7 +192,7 @@ function renderMaterials() {
         let html = `<div class="inst-card">
                         <div class="inst-banner banner-${colors[i]}">
                             <span>${inst}</span>
-                            <span>🎹</span>
+                            <span>${icons[i]}</span>
                         </div>`;
         
         const grouped = {};
@@ -212,7 +206,7 @@ function renderMaterials() {
             const divId = `hist-${i}-${idx}`;
             html += `
             <div class="material-header" onclick="toggleHistory('${divId}')">
-                <strong style="color:#1c1c1e">${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong>
+                <strong>${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong>
                 <span style="color:#c7c7cc">▼</span>
             </div>
             <div id="${divId}" class="history-list">
@@ -231,10 +225,10 @@ function renderMaterials() {
 let chart;
 function updateChart() {
     const days = [];
-    // HER STARTER VI FRA I DAG OG 13 DAGE FREM (SLETTER FORTIDEN)
-    for(let i=0; i<14; i++) {
+    // Vis fortiden (de sidste 14 dage)
+    for(let i=13; i>=0; i--) {
         const d = new Date();
-        d.setDate(d.getDate() + i);
+        d.setDate(d.getDate() - i);
         days.push(d.toISOString().split('T')[0]);
     }
     
@@ -257,14 +251,14 @@ function updateChart() {
         type: 'line',
         data: { labels, datasets },
         options: { 
-            scales: { y: { beginAtZero: true, max: 5 } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
             plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 5 } } }
         }
     });
 }
 
-updateUI();
 function updateUI() { updateChart(); }
+updateUI();
 </script>
 
 </body>
