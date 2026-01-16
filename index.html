@@ -48,6 +48,7 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   overflow: hidden;
   height: 140px;
   position: relative;
+  background-color: #333; /* Fallback farve */
 }
 
 .log-btn img {
@@ -57,7 +58,12 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   position: absolute;
   top: 0;
   left: 0;
-  filter: brightness(0.7);
+  filter: brightness(0.65);
+  transition: transform 0.3s;
+}
+
+.log-btn:active img {
+  transform: scale(1.05);
 }
 
 .log-btn span {
@@ -65,7 +71,8 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   z-index: 2;
   display: block;
   margin-top: 100px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  font-size: 16px;
 }
 
 .bg-orgel { background-color: var(--orgel); }
@@ -78,6 +85,7 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   border-radius: 28px;
   padding: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .nav-btn {
@@ -89,6 +97,7 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   color: #fff;
   font-weight: 700;
   cursor: pointer;
+  font-size: 16px;
 }
 
 /* Dialog */
@@ -115,6 +124,7 @@ select, input {
   border-radius: 14px;
   border: 1px solid #e5e5ea;
   background: #f2f2f7;
+  font-size: 16px;
 }
 
 .time-selector {
@@ -130,6 +140,7 @@ select, input {
   border-radius: 14px;
   background: none;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .time-btn.active {
@@ -147,19 +158,19 @@ select, input {
 
   <div class="instrument-grid">
     <button class="log-btn bg-orgel" onclick="openLog('Orgel')">
-        <img src="https://images.unsplash.com/photo-1518091041982-a1567174473c?w=400&q=80">
+        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?w=500&q=80" alt="Orgel">
         <span>Orgel</span>
     </button>
     <button class="log-btn bg-trommer" onclick="openLog('Trommer')">
-        <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=400&q=80">
+        <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=500&q=80" alt="Trommer">
         <span>Trommer</span>
     </button>
     <button class="log-btn bg-klaver" onclick="openLog('Klaver')">
-        <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=400&q=80">
+        <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=500&q=80" alt="Klaver">
         <span>Klaver</span>
     </button>
     <button class="log-btn bg-teori" onclick="openLog('Hørelære/teori')">
-        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=400&q=80">
+        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=500&q=80" alt="Teori">
         <span>Hørelære</span>
     </button>
   </div>
@@ -218,7 +229,7 @@ function openLog(inst) {
     document.getElementById("dialogTitle").innerText = inst;
     document.getElementById("materialInput").value = "";
     const select = document.getElementById("materialSelect");
-    select.innerHTML = '<option value="">-- Tidligere --</option>';
+    select.innerHTML = '<option value="">-- Tidligere materiale --</option>';
     [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))].forEach(m => {
         const opt = document.createElement("option"); opt.value = m; opt.textContent = m;
         select.appendChild(opt);
@@ -247,7 +258,7 @@ function renderMaterials() {
     ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].forEach(inst => {
         const instLogs = logs.filter(l => l.instrument === inst);
         if(instLogs.length === 0) return;
-        let html = `<div class="card"><h3>${inst}</h3>`;
+        let html = `<div class="card"><h3 style="margin-top:0; color:var(--${inst==='Hørelære/teori'?'teori':inst.toLowerCase()})">${inst}</h3>`;
         const summary = {};
         instLogs.forEach(l => {
             if(!summary[l.material]) summary[l.material] = { hours: 0, dates: [] };
@@ -255,9 +266,9 @@ function renderMaterials() {
             summary[l.material].dates.push(`${l.date} (${l.hours === 0.5 ? '30m' : '1t'})`);
         });
         for (const [name, data] of Object.entries(summary)) {
-            html += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
-                        <strong>${name} - ${data.hours}t</strong>
-                        <div style="font-size:12px; color:#8e8e93;">${data.dates.join(', ')}</div>
+            html += `<div style="border-bottom:1px solid #f2f2f7; padding:12px 0;">
+                        <div style="display:flex; justify-content:space-between;"><strong>${name}</strong> <span>${data.hours}t</span></div>
+                        <div style="font-size:12px; color:#8e8e93; margin-top:4px;">${data.dates.join(', ')}</div>
                      </div>`;
         }
         container.innerHTML += html + "</div>";
@@ -281,7 +292,7 @@ function updateChart() {
         return {
             label: inst,
             data: days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0)),
-            borderColor: color, backgroundColor: color + "20", fill: true, tension: 0.4
+            borderColor: color, backgroundColor: color + "25", fill: true, tension: 0.4, pointRadius: 3
         };
     });
     if(chart) chart.destroy();
@@ -289,8 +300,14 @@ function updateChart() {
         type: 'line',
         data: { labels, datasets },
         options: { 
-            scales: { y: { beginAtZero: true } },
-            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 5 } } }
+            responsive: true,
+            scales: { 
+                y: { beginAtZero: true, grid: { color: '#f2f2f7' } },
+                x: { grid: { display: false } }
+            },
+            plugins: { 
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 11 } } } 
+            }
         }
     });
 }
