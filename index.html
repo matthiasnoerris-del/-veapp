@@ -48,7 +48,7 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   overflow: hidden;
   height: 140px;
   position: relative;
-  background-color: #333; /* Fallback farve */
+  background-color: #333;
 }
 
 .log-btn img {
@@ -59,11 +59,6 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   top: 0;
   left: 0;
   filter: brightness(0.65);
-  transition: transform 0.3s;
-}
-
-.log-btn:active img {
-  transform: scale(1.05);
 }
 
 .log-btn span {
@@ -74,11 +69,6 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   text-shadow: 0 2px 10px rgba(0,0,0,0.8);
   font-size: 16px;
 }
-
-.bg-orgel { background-color: var(--orgel); }
-.bg-trommer { background-color: var(--trommer); }
-.bg-klaver { background-color: var(--klaver); }
-.bg-teori { background-color: var(--teori); }
 
 .card {
   background: white;
@@ -97,7 +87,25 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   color: #fff;
   font-weight: 700;
   cursor: pointer;
-  font-size: 16px;
+}
+
+/* Slette-knap stil */
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ff3b30;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+  margin-left: 10px;
+}
+
+.log-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f2f2f7;
+  padding: 10px 0;
 }
 
 /* Dialog */
@@ -124,7 +132,6 @@ select, input {
   border-radius: 14px;
   border: 1px solid #e5e5ea;
   background: #f2f2f7;
-  font-size: 16px;
 }
 
 .time-selector {
@@ -157,20 +164,20 @@ select, input {
   <h1>ØveApp</h1>
 
   <div class="instrument-grid">
-    <button class="log-btn bg-orgel" onclick="openLog('Orgel')">
-        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?w=500&q=80" alt="Orgel">
+    <button class="log-btn" style="background-color: var(--orgel)" onclick="openLog('Orgel')">
+        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?w=500&q=80">
         <span>Orgel</span>
     </button>
-    <button class="log-btn bg-trommer" onclick="openLog('Trommer')">
-        <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=500&q=80" alt="Trommer">
+    <button class="log-btn" style="background-color: var(--trommer)" onclick="openLog('Trommer')">
+        <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=500&q=80">
         <span>Trommer</span>
     </button>
-    <button class="log-btn bg-klaver" onclick="openLog('Klaver')">
-        <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=500&q=80" alt="Klaver">
+    <button class="log-btn" style="background-color: var(--klaver)" onclick="openLog('Klaver')">
+        <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=500&q=80">
         <span>Klaver</span>
     </button>
-    <button class="log-btn bg-teori" onclick="openLog('Hørelære/teori')">
-        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=500&q=80" alt="Teori">
+    <button class="log-btn" style="background-color: var(--teori)" onclick="openLog('Hørelære/teori')">
+        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=500&q=80">
         <span>Hørelære</span>
     </button>
   </div>
@@ -202,12 +209,13 @@ select, input {
 </div>
 
 <script>
-let logs = JSON.parse(localStorage.getItem("music_logs_v6") || "[]");
+// Vi bruger v7 for at sikre en frisk start med slette-funktion
+let logs = JSON.parse(localStorage.getItem("music_logs_v7") || "[]");
 let currentInstrument = "";
 let currentDuration = 1;
 
 function save() {
-    localStorage.setItem("music_logs_v6", JSON.stringify(logs));
+    localStorage.setItem("music_logs_v7", JSON.stringify(logs));
     updateUI();
 }
 
@@ -242,6 +250,7 @@ function closeDialog() { document.getElementById("materialDialog").style.display
 function confirmLog() {
     const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
     logs.push({
+        id: Date.now(), // Unikt ID til sletning
         date: new Date().toLocaleDateString('da-DK'),
         isoDate: new Date().toISOString().split('T')[0],
         instrument: currentInstrument,
@@ -252,25 +261,35 @@ function confirmLog() {
     closeDialog();
 }
 
+function deleteEntry(id) {
+    if(confirm("Vil du slette denne øvning?")) {
+        logs = logs.filter(l => l.id !== id);
+        save();
+        renderMaterials();
+    }
+}
+
 function renderMaterials() {
     const container = document.getElementById("materialContent");
     container.innerHTML = "";
     ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].forEach(inst => {
         const instLogs = logs.filter(l => l.instrument === inst);
         if(instLogs.length === 0) return;
-        let html = `<div class="card"><h3 style="margin-top:0; color:var(--${inst==='Hørelære/teori'?'teori':inst.toLowerCase()})">${inst}</h3>`;
-        const summary = {};
-        instLogs.forEach(l => {
-            if(!summary[l.material]) summary[l.material] = { hours: 0, dates: [] };
-            summary[l.material].hours += l.hours;
-            summary[l.material].dates.push(`${l.date} (${l.hours === 0.5 ? '30m' : '1t'})`);
+        
+        let html = `<div class="card"><h3 style="margin-top:0">${inst}</h3>`;
+        
+        // Sorter logs så de nyeste er øverst
+        instLogs.slice().reverse().forEach(l => {
+            html += `
+            <div class="log-entry">
+                <div>
+                    <div style="font-weight:700">${l.material}</div>
+                    <div style="font-size:12px; color:#8e8e93;">${l.date} (${l.hours === 0.5 ? '30m' : '1t'})</div>
+                </div>
+                <button class="delete-btn" onclick="deleteEntry(${l.id})">🗑️</button>
+            </div>`;
         });
-        for (const [name, data] of Object.entries(summary)) {
-            html += `<div style="border-bottom:1px solid #f2f2f7; padding:12px 0;">
-                        <div style="display:flex; justify-content:space-between;"><strong>${name}</strong> <span>${data.hours}t</span></div>
-                        <div style="font-size:12px; color:#8e8e93; margin-top:4px;">${data.dates.join(', ')}</div>
-                     </div>`;
-        }
+        
         container.innerHTML += html + "</div>";
     });
 }
@@ -292,7 +311,7 @@ function updateChart() {
         return {
             label: inst,
             data: days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0)),
-            borderColor: color, backgroundColor: color + "25", fill: true, tension: 0.4, pointRadius: 3
+            borderColor: color, backgroundColor: color + "25", fill: true, tension: 0.4
         };
     });
     if(chart) chart.destroy();
@@ -300,14 +319,8 @@ function updateChart() {
         type: 'line',
         data: { labels, datasets },
         options: { 
-            responsive: true,
-            scales: { 
-                y: { beginAtZero: true, grid: { color: '#f2f2f7' } },
-                x: { grid: { display: false } }
-            },
-            plugins: { 
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 11 } } } 
-            }
+            scales: { y: { beginAtZero: true } },
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 5 } } }
         }
     });
 }
