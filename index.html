@@ -6,17 +6,15 @@
 <title>Musik Logbog Pro</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  /* Ny smart farvepalette */
-  --orgel: #5e5ce6;     /* Indigo */
-  --trommer: #ff375f;   /* Rose */
-  --klaver: #32d74b;    /* Green */
-  --teori: #bf5af2;     /* Purple */
+  --orgel: #5e5ce6;
+  --trommer: #ff375f;
+  --klaver: #32d74b;
+  --teori: #bf5af2;
   --bg: #f2f2f7;
-  --card-bg: #ffffff;
 }
 
 body {
@@ -31,7 +29,7 @@ body {
 
 h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
 
-/* Instrument knapper med nye billeder */
+/* Instrument knapper */
 .instrument-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -42,36 +40,44 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
 .log-btn {
   border: none;
   border-radius: 24px;
-  padding: 0 0 15px 0;
+  padding: 0;
   color: white;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
   overflow: hidden;
-  text-align: center;
+  height: 140px;
+  position: relative;
 }
 
 .log-btn img {
   width: 100%;
-  height: 100px;
+  height: 100%;
   object-fit: cover;
-  margin-bottom: 10px;
-  filter: brightness(0.9);
+  position: absolute;
+  top: 0;
+  left: 0;
+  filter: brightness(0.7);
 }
 
-.log-btn:active { transform: scale(0.96); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-.bg-orgel { background: var(--orgel); }
-.bg-trommer { background: var(--trommer); }
-.bg-klaver { background: var(--klaver); }
-.bg-teori { background: var(--teori); }
+.log-btn span {
+  position: relative;
+  z-index: 2;
+  display: block;
+  margin-top: 100px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.bg-orgel { background-color: var(--orgel); }
+.bg-trommer { background-color: var(--trommer); }
+.bg-klaver { background-color: var(--klaver); }
+.bg-teori { background-color: var(--teori); }
 
 .card {
-  background: var(--card-bg);
+  background: white;
   border-radius: 28px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .nav-btn {
@@ -83,13 +89,9 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
   color: #fff;
   font-weight: 700;
   cursor: pointer;
-  margin-bottom: 10px;
-  transition: opacity 0.2s;
 }
 
-.nav-btn:active { opacity: 0.8; }
-
-/* Dialog & Inputs */
+/* Dialog */
 #materialDialog {
   display:none;
   position:fixed;
@@ -101,10 +103,9 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
 .dialog-box {
   background:white;
   max-width:320px;
-  margin: 10vh auto;
+  margin: 15vh auto;
   padding: 30px;
   border-radius: 32px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 
 select, input {
@@ -114,8 +115,6 @@ select, input {
   border-radius: 14px;
   border: 1px solid #e5e5ea;
   background: #f2f2f7;
-  font-family: inherit;
-  font-size: 16px;
 }
 
 .time-selector {
@@ -130,29 +129,13 @@ select, input {
   border: 2px solid #e5e5ea;
   border-radius: 14px;
   background: none;
-  cursor: pointer;
   font-weight: 700;
-  transition: 0.2s;
 }
 
 .time-btn.active {
-  border-color: #1c1c1e;
   background: #1c1c1e;
   color: white;
-}
-
-/* Materiale visning */
-.history-detail {
-    font-size: 13px;
-    color: #8e8e93;
-    margin-left: 0;
-    list-style-type: none;
-    padding: 0;
-    margin-top: 5px;
-}
-.material-row {
-    padding: 12px 0;
-    border-bottom: 1px solid #f2f2f7;
+  border-color: #1c1c1e;
 }
 </style>
 </head>
@@ -164,20 +147,20 @@ select, input {
 
   <div class="instrument-grid">
     <button class="log-btn bg-orgel" onclick="openLog('Orgel')">
-        <img src="https://images.unsplash.com/photo-1543431109-7917c15f1848?auto=format&fit=crop&w=300&q=80" alt="Orgel">
-        Orgel
+        <img src="https://images.unsplash.com/photo-1518091041982-a1567174473c?w=400&q=80">
+        <span>Orgel</span>
     </button>
     <button class="log-btn bg-trommer" onclick="openLog('Trommer')">
-        <img src="https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?auto=format&fit=crop&w=300&q=80" alt="Trommer">
-        Trommer
+        <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=400&q=80">
+        <span>Trommer</span>
     </button>
     <button class="log-btn bg-klaver" onclick="openLog('Klaver')">
-        <img src="https://images.unsplash.com/photo-1520522118961-14ad20a0307c?auto=format&fit=crop&w=300&q=80" alt="Klaver">
-        Klaver
+        <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=400&q=80">
+        <span>Klaver</span>
     </button>
     <button class="log-btn bg-teori" onclick="openLog('Hørelære/teori')">
-        <img src="https://images.unsplash.com/photo-1507838596058-a7628c734ad5?auto=format&fit=crop&w=300&q=80" alt="Teori">
-        Hørelære
+        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=400&q=80">
+        <span>Hørelære</span>
     </button>
   </div>
 
@@ -189,38 +172,31 @@ select, input {
 </div>
 
 <div id="material-screen" class="container" style="display:none">
-    <button class="nav-btn" style="background:#8e8e93" onclick="showScreen('main-screen')">⬅ Tilbage</button>
-    <h1>Materiale</h1>
+    <button class="nav-btn" style="background:#8e8e93; margin-bottom:20px;" onclick="showScreen('main-screen')">⬅ Tilbage</button>
     <div id="materialContent"></div>
 </div>
 
 <div id="materialDialog">
   <div class="dialog-box">
-    <h2 id="dialogTitle" style="margin-top:0; text-align:center;"></h2>
-    
+    <h2 id="dialogTitle" style="text-align:center; margin-top:0;"></h2>
     <div class="time-selector">
         <button id="btn30" class="time-btn" onclick="setDuration(0.5)">30 min</button>
         <button id="btn60" class="time-btn active" onclick="setDuration(1)">1 time</button>
     </div>
-
-    <select id="materialSelect" onchange="if(this.value) document.getElementById('materialInput').value = ''">
-      <option value="">-- Tidligere materiale --</option>
-    </select>
-    
+    <select id="materialSelect"><option value="">-- Tidligere materiale --</option></select>
     <input type="text" id="materialInput" placeholder="Nyt materiale...">
-    
-    <button class="nav-btn" style="margin-top:10px" onclick="confirmLog()">Gem</button>
-    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:5px; color:#8e8e93; cursor:pointer; font-weight:600;">Fortryd</button>
+    <button class="nav-btn" onclick="confirmLog()">Gem Øvning</button>
+    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:10px; color:#8e8e93; cursor:pointer;">Fortryd</button>
   </div>
 </div>
 
 <script>
-let logs = JSON.parse(localStorage.getItem("music_logs_v5") || "[]");
+let logs = JSON.parse(localStorage.getItem("music_logs_v6") || "[]");
 let currentInstrument = "";
 let currentDuration = 1;
 
 function save() {
-    localStorage.setItem("music_logs_v5", JSON.stringify(logs));
+    localStorage.setItem("music_logs_v6", JSON.stringify(logs));
     updateUI();
 }
 
@@ -241,29 +217,19 @@ function openLog(inst) {
     setDuration(1);
     document.getElementById("dialogTitle").innerText = inst;
     document.getElementById("materialInput").value = "";
-    
     const select = document.getElementById("materialSelect");
-    select.innerHTML = '<option value="">-- Tidligere materiale --</option>';
-    
-    const existing = [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))];
-    existing.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m; opt.textContent = m;
+    select.innerHTML = '<option value="">-- Tidligere --</option>';
+    [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))].forEach(m => {
+        const opt = document.createElement("option"); opt.value = m; opt.textContent = m;
         select.appendChild(opt);
     });
-
     document.getElementById("materialDialog").style.display = "block";
 }
 
-function closeDialog() {
-    document.getElementById("materialDialog").style.display = "none";
-}
+function closeDialog() { document.getElementById("materialDialog").style.display = "none"; }
 
 function confirmLog() {
-    const sel = document.getElementById("materialSelect").value;
-    const inp = document.getElementById("materialInput").value.trim();
-    const finalMaterial = inp || sel || "Øvning";
-
+    const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
     logs.push({
         date: new Date().toLocaleDateString('da-DK'),
         isoDate: new Date().toISOString().split('T')[0],
@@ -271,113 +237,65 @@ function confirmLog() {
         material: finalMaterial,
         hours: currentDuration
     });
-
     save();
     closeDialog();
-}
-
-function updateUI() {
-    updateChart();
 }
 
 function renderMaterials() {
     const container = document.getElementById("materialContent");
     container.innerHTML = "";
-    
-    const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
-    insts.forEach(inst => {
+    ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].forEach(inst => {
         const instLogs = logs.filter(l => l.instrument === inst);
         if(instLogs.length === 0) return;
-
-        let html = `<div class="card">
-                      <h3 style="color: var(--${getVarName(inst)}); margin-top:0; font-size:22px;">${inst}</h3>`;
-        
+        let html = `<div class="card"><h3>${inst}</h3>`;
         const summary = {};
         instLogs.forEach(l => {
             if(!summary[l.material]) summary[l.material] = { hours: 0, dates: [] };
             summary[l.material].hours += l.hours;
             summary[l.material].dates.push(`${l.date} (${l.hours === 0.5 ? '30m' : '1t'})`);
         });
-
         for (const [name, data] of Object.entries(summary)) {
-            html += `<div class="material-row">
-                        <div style="display:flex; justify-content:space-between; font-weight:700;">
-                            <span>${name}</span>
-                            <span>${data.hours}t</span>
-                        </div>
-                        <ul class="history-detail">
-                            ${data.dates.map(d => `<li>• ${d}</li>`).join('')}
-                        </ul>
+            html += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
+                        <strong>${name} - ${data.hours}t</strong>
+                        <div style="font-size:12px; color:#8e8e93;">${data.dates.join(', ')}</div>
                      </div>`;
         }
-        html += `</div>`;
-        container.innerHTML += html;
+        container.innerHTML += html + "</div>";
     });
-}
-
-function getVarName(inst) {
-    if(inst.includes("Hørelære")) return "teori";
-    return inst.toLowerCase();
-}
-
-function getInstColor(inst) {
-    const colors = {
-        "Orgel": "#5e5ce6",
-        "Trommer": "#ff375f",
-        "Klaver": "#32d74b",
-        "Hørelære/teori": "#bf5af2"
-    };
-    return colors[inst] || "#000";
 }
 
 let chart;
 function updateChart() {
     const days = [];
-    for(let i=13; i>=0; i--) { // Viser de sidste 14 dage
+    for(let i=13; i>=0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         days.push(d.toISOString().split('T')[0]);
     }
-
     const labels = days.map(d => {
         const date = new Date(d);
-        return date.toLocaleDateString('da-DK', {day: 'numeric', month: 'short'});
+        return date.getDate() + ". " + date.toLocaleString('da-DK', {month:'short'});
     });
-
     const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
-        const color = getInstColor(inst);
+        const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#32d74b":"#bf5af2");
         return {
             label: inst,
-            data: days.map(d => {
-                return logs.filter(l => l.isoDate === d && l.instrument === inst)
-                           .reduce((sum, current) => sum + current.hours, 0);
-            }),
-            borderColor: color,
-            backgroundColor: color + "20", // Gennemsigtig baggrund til bølgen
-            fill: true,
-            tension: 0.4, // Dette skaber de bløde bølge-kurver
-            pointRadius: 2
+            data: days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0)),
+            borderColor: color, backgroundColor: color + "20", fill: true, tension: 0.4
         };
     });
-
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById("progressChart"), {
         type: 'line',
         data: { labels, datasets },
-        options: {
-            responsive: true,
-            interaction: { mode: 'index', intersect: false },
-            scales: { 
-                x: { grid: { display: false } },
-                y: { beginAtZero: true, grid: { color: '#e5e5ea' } } 
-            },
-            plugins: { 
-                legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: {size: 11, weight: '600'} } }
-            }
+        options: { 
+            scales: { y: { beginAtZero: true } },
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 5 } } }
         }
     });
 }
 
+function updateUI() { updateChart(); }
 updateUI();
 </script>
 
