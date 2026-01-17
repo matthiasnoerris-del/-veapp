@@ -2,24 +2,21 @@
   "name": "ØveApp – Januar 2026",
   "short_name": "ØveApp",
   "description": "En app til at registrere tromme-, klaver- og orgel-øvetimer, med graf og materialelog.",
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#f9fafb",
-  "theme_color": "#4ade80",
+  "background_color": "#f2f2f7",
+  "theme_color": "#1c1c1e",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/jpeg"
     },
     {
-      "src": "icon-511.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
   ]
 }
-
-
-
