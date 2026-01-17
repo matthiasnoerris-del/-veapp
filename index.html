@@ -294,7 +294,7 @@ function updateChart() {
             tension: 0.3, 
             pointRadius: 4,
             pointBackgroundColor: color,
-            spanGaps: true // FORBINDER PUNKTER OVER TOMME DAGE
+            spanGaps: true
         };
     });
 
@@ -306,8 +306,16 @@ function updateChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: { 
-                y: { beginAtZero: true, min: 0, ticks: { stepSize: 1, font: { size: 11 } } },
-                x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } }
+                y: { 
+                    beginAtZero: true, 
+                    min: 0, 
+                    ticks: { stepSize: 1, font: { size: 11 } },
+                    grid: { color: "#e5e5ea" } // Vandrette linjer
+                },
+                x: { 
+                    ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } },
+                    grid: { display: true, color: "#e5e5ea" } // HER AKTIVERES DE LODRETTE LINJER
+                }
             },
             plugins: { 
                 legend: { 
