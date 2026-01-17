@@ -8,22 +8,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1c1c1e"> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="theme-color" content="#1c1c1e">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --orgel: #5e5ce6; --trommer: #ff375f; --klaver: #32d74b; --teori: #bf5af2; --bg: #f2f2f7;
+  --orgel: #5e5ce6; --trommer: #ff375f; --klaver: #ff9f0a; --teori: #bf5af2; --bg: #f2f2f7;
 }
 
-body { 
-  font-family: 'Inter', sans-serif; 
-  background: var(--bg); 
-  margin: 0; 
-  padding: 15px; 
-  color: #1c1c1e;
-}
-
+body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #1c1c1e; }
 .container { max-width: 500px; margin: 0 auto; }
 h1 { text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; font-size: 32px; }
 
@@ -40,24 +35,23 @@ h1 { text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800
 
 .card { background: white; border-radius: 28px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-/* Materiale Design - Helt rent uden ikoner */
 .inst-card { background: white; border-radius: 24px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .inst-banner { padding: 15px 20px; color: white; font-weight: 800; font-size: 18px; }
 .banner-orgel { background: linear-gradient(135deg, #5e5ce6, #7e7cf6); }
 .banner-trommer { background: linear-gradient(135deg, #ff375f, #ff6480); }
-.banner-klaver { background: linear-gradient(135deg, #32d74b, #63e681); }
+.banner-klaver { background: linear-gradient(135deg, #ff9f0a, #ffb340); }
 .banner-teori { background: linear-gradient(135deg, #bf5af2, #d58df6); }
 
 .material-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #f2f2f7; }
 .history-list { display: none; padding: 10px 20px; background: #f9f9fb; }
 .history-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #eee; }
 
-.nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; }
+.nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
 .backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 30px; }
 
 #materialDialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(10px); }
 .dialog-box { background:white; max-width:320px; margin: 15vh auto; padding: 30px; border-radius: 32px; }
-select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; font-size: 16px; }
+select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; font-size: 16px; box-sizing: border-box; }
 .time-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .time-btn { padding: 12px; border: 2px solid #e5e5ea; border-radius: 14px; background: none; font-weight: 700; }
 .time-btn.active { background: #1c1c1e; color: white; border-color: #1c1c1e; }
@@ -110,13 +104,19 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
 <div id="materialDialog">
   <div class="dialog-box">
     <h2 id="dialogTitle" style="text-align:center; margin-top:0;"></h2>
-    <div class="time-selector">
-        <button id="btn30" class="time-btn" onclick="setDuration(0.5)">30 min</button>
-        <button id="btn60" class="time-btn active" onclick="setDuration(1)">1 time</button>
+    <div id="editDateSection" style="display:none">
+        <label style="font-size: 12px; color:#8e8e93;">Ret dato:</label>
+        <input type="date" id="editDateInput">
     </div>
-    <select id="materialSelect"><option value="">-- Tidligere materiale --</option></select>
-    <input type="text" id="materialInput" placeholder="Nyt materiale...">
-    <button class="nav-btn" onclick="confirmLog()">Gem</button>
+    <div id="standardInputs">
+        <div class="time-selector">
+            <button id="btn30" class="time-btn" onclick="setDuration(0.5)">30 min</button>
+            <button id="btn60" class="time-btn active" onclick="setDuration(1)">1 time</button>
+        </div>
+        <select id="materialSelect"><option value="">-- Tidligere materiale --</option></select>
+        <input type="text" id="materialInput" placeholder="Nyt materiale...">
+    </div>
+    <button class="nav-btn" id="confirmBtn" onclick="confirmLog()">Gem</button>
     <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:10px; color:#8e8e93; cursor:pointer;">Fortryd</button>
   </div>
 </div>
@@ -126,13 +126,14 @@ const STORAGE_KEY = "music_logs_final";
 let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 let currentInstrument = "";
 let currentDuration = 1;
+let editingLogId = null;
 
 function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
     updateUI();
 }
 
-function exportData() { prompt("Kopier backup-kode:", JSON.stringify(logs)); }
+function exportData() { prompt("Backup-kode:", JSON.stringify(logs)); }
 function importData() {
     const data = prompt("Indsæt backup-kode:");
     if(data) { try { logs = JSON.parse(data); save(); alert("Data genindlæst!"); } catch(e) { alert("Fejl!"); } }
@@ -151,8 +152,11 @@ function setDuration(val) {
 }
 
 function openLog(inst) {
+    editingLogId = null;
     currentInstrument = inst; setDuration(1);
     document.getElementById("dialogTitle").innerText = inst;
+    document.getElementById("editDateSection").style.display = "none";
+    document.getElementById("standardInputs").style.display = "block";
     document.getElementById("materialInput").value = "";
     const select = document.getElementById("materialSelect");
     select.innerHTML = '<option value="">-- Tidligere materiale --</option>';
@@ -163,19 +167,40 @@ function openLog(inst) {
     document.getElementById("materialDialog").style.display = "block";
 }
 
+function openEditDate(id) {
+    const log = logs.find(l => l.id === id);
+    if(!log) return;
+    editingLogId = id;
+    document.getElementById("dialogTitle").innerText = "Ret Dato";
+    document.getElementById("editDateSection").style.display = "block";
+    document.getElementById("standardInputs").style.display = "none";
+    document.getElementById("editDateInput").value = log.isoDate;
+    document.getElementById("materialDialog").style.display = "block";
+}
+
 function closeDialog() { document.getElementById("materialDialog").style.display = "none"; }
 
 function confirmLog() {
-    const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
-    logs.push({
-        id: Date.now(),
-        date: new Date().toLocaleDateString('da-DK'),
-        isoDate: new Date().toISOString().split('T')[0],
-        instrument: currentInstrument,
-        material: finalMaterial,
-        hours: currentDuration
-    });
+    if(editingLogId) {
+        const newDate = document.getElementById("editDateInput").value;
+        const logIndex = logs.findIndex(l => l.id === editingLogId);
+        if(logIndex > -1 && newDate) {
+            logs[logIndex].isoDate = newDate;
+            logs[logIndex].date = new Date(newDate).toLocaleDateString('da-DK');
+        }
+    } else {
+        const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
+        logs.push({
+            id: Date.now(),
+            date: new Date().toLocaleDateString('da-DK'),
+            isoDate: new Date().toISOString().split('T')[0],
+            instrument: currentInstrument,
+            material: finalMaterial,
+            hours: currentDuration
+        });
+    }
     save(); closeDialog();
+    if(document.getElementById('material-screen').style.display === 'block') renderMaterials();
 }
 
 function deleteEntry(id, event) {
@@ -213,10 +238,13 @@ function renderMaterials() {
                 <span>▼</span>
             </div>
             <div id="${divId}" class="history-list">
-                ${grouped[mat].entries.slice().reverse().map(e => `
+                ${grouped[mat].entries.slice().sort((a,b) => b.isoDate.localeCompare(a.isoDate)).map(e => `
                     <div class="history-item">
                         <span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span>
-                        <button style="background:none; border:none; color:#ff3b30;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
+                        <div>
+                            <button style="background:none; border:none; color:#8e8e93; margin-right:10px; font-size:16px;" onclick="openEditDate(${e.id})">✎</button>
+                            <button style="background:none; border:none; color:#ff3b30; font-size:16px;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
+                        </div>
                     </div>
                 `).join('')}
             </div>`;
@@ -240,7 +268,7 @@ function updateChart() {
     });
 
     const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
-        const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#32d74b":"#bf5af2");
+        const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#ff9f0a":"#bf5af2");
         return {
             label: inst,
             data: days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0)),
@@ -266,7 +294,15 @@ function updateChart() {
                 x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } }
             },
             plugins: { 
-                legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10 } } } 
+                legend: { 
+                    position: 'bottom', 
+                    labels: { 
+                        usePointStyle: true, 
+                        boxWidth: 4, // Her er cirklerne gjort mindre
+                        padding: 15,
+                        font: { size: 10 } 
+                    } 
+                } 
             }
         }
     });
