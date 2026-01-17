@@ -133,7 +133,7 @@ function save() {
     updateUI();
 }
 
-function exportData() { prompt("Kopier backup:", JSON.stringify(logs)); }
+function exportData() { prompt("Backup:", JSON.stringify(logs)); }
 function importData() {
     const data = prompt("Indsæt backup:");
     if(data) { try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); } }
@@ -207,7 +207,7 @@ function confirmLog() {
 
 function deleteEntry(id, event) {
     event.stopPropagation();
-    if(confirm("Slet denne?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+    if(confirm("Slet?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
 }
 
 function toggleHistory(id) {
@@ -259,7 +259,6 @@ let chart;
 function updateChart() {
     const days = [];
     const now = new Date();
-    // Generer 14 dage frem til i dag dynamisk
     for(let i=13; i>=0; i--) {
         const d = new Date();
         d.setDate(now.getDate() - i);
@@ -274,10 +273,10 @@ function updateChart() {
     const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
         const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#ff9f0a":"#bf5af2");
         
-        // Sorterer dataen så linjerne tegnes korrekt fra venstre mod højre
         const dataPoints = days.map(d => {
-            return logs.filter(l => l.isoDate === d && l.instrument === inst)
-                       .reduce((s, c) => s + c.hours, 0);
+            const sum = logs.filter(l => l.isoDate === d && l.instrument === inst)
+                           .reduce((s, c) => s + c.hours, 0);
+            return sum === 0 ? null : sum; // Vigtigt: Returnerer 'null' i stedet for 0
         });
 
         return {
@@ -290,7 +289,7 @@ function updateChart() {
             tension: 0.3, 
             pointRadius: 4,
             pointBackgroundColor: color,
-            spanGaps: true // Sikrer at linjen ikke knækker hvis en dag mangler
+            spanGaps: false // Fjerner forbindelsen mellem tomme dage!
         };
     });
 
@@ -301,9 +300,8 @@ function updateChart() {
         options: { 
             responsive: true,
             maintainAspectRatio: false,
-            animation: false, // Hurtigere opdatering
             scales: { 
-                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
+                y: { beginAtZero: true, min: 0, ticks: { stepSize: 1, font: { size: 11 } } },
                 x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } }
             },
             plugins: { 
@@ -311,8 +309,9 @@ function updateChart() {
                     position: 'bottom', 
                     labels: { 
                         usePointStyle: true, 
-                        boxWidth: 3, // MEGET SMÅ CIRKLER HER
-                        padding: 12,
+                        pointStyle: 'circle',
+                        boxWidth: 2, // Her bliver cirklerne meget små!
+                        padding: 10,
                         font: { size: 10 } 
                     } 
                 } 
@@ -321,7 +320,7 @@ function updateChart() {
     });
 }
 
-updateUI = () => updateChart();
+const updateUI = () => updateChart();
 updateChart();
 </script>
 
