@@ -105,7 +105,7 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
   <div class="dialog-box">
     <h2 id="dialogTitle" style="text-align:center; margin-top:0;"></h2>
     <div id="editDateSection" style="display:none">
-        <label style="font-size: 12px; color:#8e8e93;">Ret dato:</label>
+        <label style="font-size: 12px; color:#8e8e93;">Vælg ny dato:</label>
         <input type="date" id="editDateInput">
     </div>
     <div id="standardInputs">
@@ -133,10 +133,10 @@ function save() {
     updateUI();
 }
 
-function exportData() { prompt("Backup-kode:", JSON.stringify(logs)); }
+function exportData() { prompt("Kopier backup:", JSON.stringify(logs)); }
 function importData() {
-    const data = prompt("Indsæt backup-kode:");
-    if(data) { try { logs = JSON.parse(data); save(); alert("Data genindlæst!"); } catch(e) { alert("Fejl!"); } }
+    const data = prompt("Indsæt backup:");
+    if(data) { try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); } }
 }
 
 function showScreen(id) {
@@ -182,18 +182,20 @@ function closeDialog() { document.getElementById("materialDialog").style.display
 
 function confirmLog() {
     if(editingLogId) {
-        const newDate = document.getElementById("editDateInput").value;
+        const newDateVal = document.getElementById("editDateInput").value;
         const logIndex = logs.findIndex(l => l.id === editingLogId);
-        if(logIndex > -1 && newDate) {
-            logs[logIndex].isoDate = newDate;
-            logs[logIndex].date = new Date(newDate).toLocaleDateString('da-DK');
+        if(logIndex > -1 && newDateVal) {
+            logs[logIndex].isoDate = newDateVal;
+            const dateObj = new Date(newDateVal);
+            logs[logIndex].date = dateObj.toLocaleDateString('da-DK');
         }
     } else {
         const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
+        const today = new Date();
         logs.push({
             id: Date.now(),
-            date: new Date().toLocaleDateString('da-DK'),
-            isoDate: new Date().toISOString().split('T')[0],
+            date: today.toLocaleDateString('da-DK'),
+            isoDate: today.toISOString().split('T')[0],
             instrument: currentInstrument,
             material: finalMaterial,
             hours: currentDuration
@@ -205,7 +207,7 @@ function confirmLog() {
 
 function deleteEntry(id, event) {
     event.stopPropagation();
-    if(confirm("Slet registrering?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+    if(confirm("Slet denne?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
 }
 
 function toggleHistory(id) {
@@ -242,8 +244,8 @@ function renderMaterials() {
                     <div class="history-item">
                         <span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span>
                         <div>
-                            <button style="background:none; border:none; color:#8e8e93; margin-right:10px; font-size:16px;" onclick="openEditDate(${e.id})">✎</button>
-                            <button style="background:none; border:none; color:#ff3b30; font-size:16px;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
+                            <button style="background:none; border:none; color:#8e8e93; margin-right:15px; font-size:18px;" onclick="openEditDate(${e.id})">✎</button>
+                            <button style="background:none; border:none; color:#ff3b30; font-size:18px;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
                         </div>
                     </div>
                 `).join('')}
@@ -256,9 +258,11 @@ function renderMaterials() {
 let chart;
 function updateChart() {
     const days = [];
+    const now = new Date();
+    // Generer 14 dage frem til i dag dynamisk
     for(let i=13; i>=0; i--) {
         const d = new Date();
-        d.setDate(d.getDate() - i);
+        d.setDate(now.getDate() - i);
         days.push(d.toISOString().split('T')[0]);
     }
     
@@ -269,16 +273,24 @@ function updateChart() {
 
     const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
         const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#ff9f0a":"#bf5af2");
+        
+        // Sorterer dataen så linjerne tegnes korrekt fra venstre mod højre
+        const dataPoints = days.map(d => {
+            return logs.filter(l => l.isoDate === d && l.instrument === inst)
+                       .reduce((s, c) => s + c.hours, 0);
+        });
+
         return {
             label: inst,
-            data: days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0)),
+            data: dataPoints,
             borderColor: color, 
             backgroundColor: "transparent",
             borderWidth: 3,
             fill: false, 
             tension: 0.3, 
             pointRadius: 4,
-            pointBackgroundColor: color
+            pointBackgroundColor: color,
+            spanGaps: true // Sikrer at linjen ikke knækker hvis en dag mangler
         };
     });
 
@@ -289,6 +301,7 @@ function updateChart() {
         options: { 
             responsive: true,
             maintainAspectRatio: false,
+            animation: false, // Hurtigere opdatering
             scales: { 
                 y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
                 x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } }
@@ -298,8 +311,8 @@ function updateChart() {
                     position: 'bottom', 
                     labels: { 
                         usePointStyle: true, 
-                        boxWidth: 4, // Her er cirklerne gjort mindre
-                        padding: 15,
+                        boxWidth: 3, // MEGET SMÅ CIRKLER HER
+                        padding: 12,
                         font: { size: 10 } 
                     } 
                 } 
@@ -308,8 +321,8 @@ function updateChart() {
     });
 }
 
-function updateUI() { updateChart(); }
-updateUI();
+updateUI = () => updateChart();
+updateChart();
 </script>
 
 </body>
