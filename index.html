@@ -2,8 +2,12 @@
 <html lang="da">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Musik Logbog Pro</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +17,15 @@
   --orgel: #5e5ce6; --trommer: #ff375f; --klaver: #32d74b; --teori: #bf5af2; --bg: #f2f2f7;
 }
 
-body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #1c1c1e; }
+body { 
+  font-family: 'Inter', sans-serif; 
+  background: var(--bg); 
+  margin: 0; 
+  padding: 15px; 
+  color: #1c1c1e;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .container { max-width: 500px; margin: 0 auto; }
 h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
 
@@ -30,9 +42,9 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
 
 .card { background: white; border-radius: 28px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-/* Materiale Design med grafik */
+/* Materiale Design - Uden emojis */
 .inst-card { background: white; border-radius: 24px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-.inst-banner { padding: 15px 20px; color: white; font-weight: 800; font-size: 18px; display: flex; justify-content: space-between; }
+.inst-banner { padding: 15px 20px; color: white; font-weight: 800; font-size: 18px; }
 .banner-orgel { background: linear-gradient(135deg, #5e5ce6, #7e7cf6); }
 .banner-trommer { background: linear-gradient(135deg, #ff375f, #ff6480); }
 .banner-klaver { background: linear-gradient(135deg, #32d74b, #63e681); }
@@ -111,7 +123,6 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
 </div>
 
 <script>
-// Gemme-logik
 const STORAGE_KEY = "music_logs_final";
 let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 let currentInstrument = "";
@@ -122,10 +133,10 @@ function save() {
     updateUI();
 }
 
-function exportData() { prompt("Kopier din backup-kode:", JSON.stringify(logs)); }
+function exportData() { prompt("Kopier backup-kode:", JSON.stringify(logs)); }
 function importData() {
-    const data = prompt("Indsæt din backup-kode:");
-    if(data) { try { logs = JSON.parse(data); save(); alert("Data er genindlæst!"); } catch(e) { alert("Fejl i koden!"); } }
+    const data = prompt("Indsæt backup-kode:");
+    if(data) { try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); } }
 }
 
 function showScreen(id) {
@@ -170,7 +181,7 @@ function confirmLog() {
 
 function deleteEntry(id, event) {
     event.stopPropagation();
-    if(confirm("Vil du slette denne registrering?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+    if(confirm("Slet denne?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
 }
 
 function toggleHistory(id) {
@@ -183,7 +194,6 @@ function renderMaterials() {
     container.innerHTML = "";
     const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
     const colors = ["orgel", "trommer", "klaver", "teori"];
-    const icons = ["🎹", "🥁", "🎹", "🎼"];
 
     insts.forEach((inst, i) => {
         const instLogs = logs.filter(l => l.instrument === inst);
@@ -192,7 +202,6 @@ function renderMaterials() {
         let html = `<div class="inst-card">
                         <div class="inst-banner banner-${colors[i]}">
                             <span>${inst}</span>
-                            <span>${icons[i]}</span>
                         </div>`;
         
         const grouped = {};
@@ -225,7 +234,7 @@ function renderMaterials() {
 let chart;
 function updateChart() {
     const days = [];
-    // Vis fortiden (de sidste 14 dage)
+    // HER SIKRER VI AT DEN GÅR PRÆCIS TIL I DAG
     for(let i=13; i>=0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -242,7 +251,13 @@ function updateChart() {
         return {
             label: inst,
             data: days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0)),
-            borderColor: color, backgroundColor: color + "25", fill: true, tension: 0.4, pointRadius: 3
+            borderColor: color, 
+            backgroundColor: "transparent", // Fjerner fill så farverne ikke blender
+            borderWidth: 3,
+            fill: false, 
+            tension: 0.3, 
+            pointRadius: 4,
+            pointBackgroundColor: color
         };
     });
 
@@ -251,8 +266,15 @@ function updateChart() {
         type: 'line',
         data: { labels, datasets },
         options: { 
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 5 } } }
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { 
+                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                x: { ticks: { maxRotation: 45, minRotation: 45 } }
+            },
+            plugins: { 
+                legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10 } } } 
+            }
         }
     });
 }
