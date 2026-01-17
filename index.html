@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Musik Logbog Pro</title>
+<title>ØveApp</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1c1c1e"> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
@@ -23,11 +22,10 @@ body {
   margin: 0; 
   padding: 15px; 
   color: #1c1c1e;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .container { max-width: 500px; margin: 0 auto; }
-h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
+h1 { text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; font-size: 32px; }
 
 .instrument-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
 
@@ -42,7 +40,7 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
 
 .card { background: white; border-radius: 28px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-/* Materiale Design - Uden emojis */
+/* Materiale Design - Helt rent uden ikoner */
 .inst-card { background: white; border-radius: 24px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .inst-banner { padding: 15px 20px; color: white; font-weight: 800; font-size: 18px; }
 .banner-orgel { background: linear-gradient(135deg, #5e5ce6, #7e7cf6); }
@@ -50,17 +48,16 @@ h1 { text-align: center; margin-bottom: 20px; font-weight: 800; letter-spacing: 
 .banner-klaver { background: linear-gradient(135deg, #32d74b, #63e681); }
 .banner-teori { background: linear-gradient(135deg, #bf5af2, #d58df6); }
 
-.material-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #f2f2f7; background: #fff; }
+.material-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #f2f2f7; }
 .history-list { display: none; padding: 10px 20px; background: #f9f9fb; }
 .history-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #eee; }
 
-.nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
-.backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 20px; }
+.nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; }
+.backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 30px; }
 
-/* Dialog */
 #materialDialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(10px); }
 .dialog-box { background:white; max-width:320px; margin: 15vh auto; padding: 30px; border-radius: 32px; }
-select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; }
+select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; font-size: 16px; }
 .time-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .time-btn { padding: 12px; border: 2px solid #e5e5ea; border-radius: 14px; background: none; font-weight: 700; }
 .time-btn.active { background: #1c1c1e; color: white; border-color: #1c1c1e; }
@@ -73,29 +70,31 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
   <h1>ØveApp</h1>
 
   <div class="instrument-grid">
-    <button class="log-btn" style="background-color: var(--orgel)" onclick="openLog('Orgel')">
+    <button class="log-btn" onclick="openLog('Orgel')">
         <img src="AarhusDom-Orgel-3%20(3).jpg">
         <span>Orgel</span>
     </button>
-    <button class="log-btn" style="background-color: var(--trommer)" onclick="openLog('Trommer')">
+    <button class="log-btn" onclick="openLog('Trommer')">
         <img src="https://images.unsplash.com/photo-1543443374-b6fe10a6ab7b?w=400">
         <span>Trommer</span>
     </button>
-    <button class="log-btn" style="background-color: var(--klaver)" onclick="openLog('Klaver')">
+    <button class="log-btn" onclick="openLog('Klaver')">
         <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?w=400">
         <span>Klaver</span>
     </button>
-    <button class="log-btn" style="background-color: var(--teori)" onclick="openLog('Hørelære/teori')">
+    <button class="log-btn" onclick="openLog('Hørelære/teori')">
         <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=400">
         <span>Hørelære</span>
     </button>
   </div>
 
   <div class="card">
-    <canvas id="progressChart" height="220"></canvas>
+    <div style="height: 230px; position: relative;">
+      <canvas id="progressChart"></canvas>
+    </div>
   </div>
 
-  <button class="nav-btn" onclick="showScreen('material-screen')">📂 Se Øve-materiale</button>
+  <button class="nav-btn" onclick="showScreen('material-screen')">Se Øve-materiale</button>
   
   <div class="backup-section">
       <span onclick="exportData()" style="cursor:pointer">Backup</span> | 
@@ -136,7 +135,7 @@ function save() {
 function exportData() { prompt("Kopier backup-kode:", JSON.stringify(logs)); }
 function importData() {
     const data = prompt("Indsæt backup-kode:");
-    if(data) { try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); } }
+    if(data) { try { logs = JSON.parse(data); save(); alert("Data genindlæst!"); } catch(e) { alert("Fejl!"); } }
 }
 
 function showScreen(id) {
@@ -181,7 +180,7 @@ function confirmLog() {
 
 function deleteEntry(id, event) {
     event.stopPropagation();
-    if(confirm("Slet denne?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+    if(confirm("Slet registrering?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
 }
 
 function toggleHistory(id) {
@@ -199,11 +198,7 @@ function renderMaterials() {
         const instLogs = logs.filter(l => l.instrument === inst);
         if(instLogs.length === 0) return;
         
-        let html = `<div class="inst-card">
-                        <div class="inst-banner banner-${colors[i]}">
-                            <span>${inst}</span>
-                        </div>`;
-        
+        let html = `<div class="inst-card"><div class="inst-banner banner-${colors[i]}"><span>${inst}</span></div>`;
         const grouped = {};
         instLogs.forEach(l => {
             if(!grouped[l.material]) grouped[l.material] = { total: 0, entries: [] };
@@ -213,16 +208,15 @@ function renderMaterials() {
 
         Object.keys(grouped).forEach((mat, idx) => {
             const divId = `hist-${i}-${idx}`;
-            html += `
-            <div class="material-header" onclick="toggleHistory('${divId}')">
+            html += `<div class="material-header" onclick="toggleHistory('${divId}')">
                 <strong>${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong>
-                <span style="color:#c7c7cc">▼</span>
+                <span>▼</span>
             </div>
             <div id="${divId}" class="history-list">
                 ${grouped[mat].entries.slice().reverse().map(e => `
                     <div class="history-item">
                         <span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span>
-                        <button style="background:none; border:none; color:#ff3b30; cursor:pointer;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
+                        <button style="background:none; border:none; color:#ff3b30;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
                     </div>
                 `).join('')}
             </div>`;
@@ -234,7 +228,6 @@ function renderMaterials() {
 let chart;
 function updateChart() {
     const days = [];
-    // HER SIKRER VI AT DEN GÅR PRÆCIS TIL I DAG
     for(let i=13; i>=0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -252,7 +245,7 @@ function updateChart() {
             label: inst,
             data: days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0)),
             borderColor: color, 
-            backgroundColor: "transparent", // Fjerner fill så farverne ikke blender
+            backgroundColor: "transparent",
             borderWidth: 3,
             fill: false, 
             tension: 0.3, 
@@ -269,8 +262,8 @@ function updateChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: { 
-                y: { beginAtZero: true, ticks: { stepSize: 1 } },
-                x: { ticks: { maxRotation: 45, minRotation: 45 } }
+                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
+                x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } }
             },
             plugins: { 
                 legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10 } } } 
