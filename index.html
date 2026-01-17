@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ØveApp</title>
 
-<link rel="manifest" href="manifest.json">
-
+<link rel="apple-touch-icon" href="https://i.postimg.cc/mD3m9qXm/icon-192.png">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/mD3m9qXm/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ØveApp">
 <meta name="theme-color" content="#1c1c1e">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -330,8 +331,8 @@ function updateChart() {
                     labels: { 
                         usePointStyle: true, 
                         pointStyle: 'circle',
-                        boxWidth: 2, 
-                        padding: 10,
+                        boxWidth: 5, // Gør cirklerne mindre
+                        padding: 15, // Giver lidt mere luft omkring dem
                         font: { size: 10 } 
                     } 
                 } 
