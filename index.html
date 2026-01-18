@@ -39,25 +39,36 @@ h1 { text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800
 .card { background: white; border-radius: 28px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
 .inst-card { background: white; border-radius: 24px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-.inst-banner { padding: 15px 20px; color: white; font-weight: 800; font-size: 18px; }
+.inst-banner { padding: 15px 20px; color: white; font-weight: 800; font-size: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 .banner-orgel { background: linear-gradient(135deg, #5e5ce6, #7e7cf6); }
 .banner-trommer { background: linear-gradient(135deg, #ff375f, #ff6480); }
 .banner-klaver { background: linear-gradient(135deg, #ff9f0a, #ffb340); }
 .banner-teori { background: linear-gradient(135deg, #bf5af2, #d58df6); }
 
+/* Dropdown styling til instrumenter */
+.inst-content { display: none; }
+
 .material-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #f2f2f7; }
 .history-list { display: none; padding: 10px 20px; background: #f9f9fb; }
-.history-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #eee; }
+.history-item { display: flex; flex-direction: column; padding: 10px 0; border-bottom: 1px solid #eee; }
+.history-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.note-text { font-size: 11px; color: #8e8e93; margin-top: 4px; font-style: italic; }
 
 .nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
 .backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 30px; }
 
 #materialDialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(10px); }
-.dialog-box { background:white; max-width:320px; margin: 15vh auto; padding: 30px; border-radius: 32px; }
-select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; font-size: 16px; box-sizing: border-box; }
-.time-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.time-btn { padding: 12px; border: 2px solid #e5e5ea; border-radius: 14px; background: none; font-weight: 700; }
+.dialog-box { background:white; max-width:320px; margin: 8vh auto; padding: 25px; border-radius: 32px; box-sizing: border-box; }
+select, input, textarea { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; font-size: 16px; box-sizing: border-box; font-family: inherit; }
+textarea { height: 80px; resize: none; }
+
+.time-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+.time-btn { padding: 12px; border: 2px solid #e5e5ea; border-radius: 14px; background: none; font-weight: 700; cursor: pointer; }
 .time-btn.active { background: #1c1c1e; color: white; border-color: #1c1c1e; }
+
+/* Søgefelt styling */
+.search-container { margin-bottom: 15px; }
+.search-input { background: white !important; border: 2px solid #e5e5ea !important; }
 </style>
 </head>
 
@@ -80,7 +91,7 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
         <span>Klaver</span>
     </button>
     <button class="log-btn" onclick="openLog('Hørelære/teori')">
-        <img src="https://images.unsplash.com/photo-1515524738708-327f6b0037a7?w=400">
+        <img src="https://images.unsplash.com/photo-1507838596758-24b2a7b1d3a5?w=400">
         <span>Hørelære</span>
     </button>
   </div>
@@ -100,17 +111,24 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
 </div>
 
 <div id="material-screen" class="container" style="display:none">
-    <button class="nav-btn" style="background:#8e8e93; margin-bottom:20px;" onclick="showScreen('main-screen')">⬅ Tilbage</button>
+    <button class="nav-btn" style="background:#8e8e93; margin-bottom:15px;" onclick="showScreen('main-screen')">⬅ Tilbage</button>
+    
+    <div class="search-container">
+        <input type="text" id="materialSearch" class="search-input" placeholder="Søg i materiale eller noter..." onkeyup="renderMaterials()">
+    </div>
+
     <div id="materialContent"></div>
 </div>
 
 <div id="materialDialog">
   <div class="dialog-box">
-    <h2 id="dialogTitle" style="text-align:center; margin-top:0;"></h2>
+    <h2 id="dialogTitle" style="text-align:center; margin-top:0; margin-bottom:15px;"></h2>
+    
     <div id="editDateSection" style="display:none">
         <label style="font-size: 12px; color:#8e8e93;">Vælg ny dato:</label>
         <input type="date" id="editDateInput">
     </div>
+
     <div id="standardInputs">
         <div class="time-selector">
             <button id="btn30" class="time-btn" onclick="setDuration(0.5)">30 min</button>
@@ -119,8 +137,11 @@ select, input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 
         <select id="materialSelect"><option value="">-- Tidligere materiale --</option></select>
         <input type="text" id="materialInput" placeholder="Nyt materiale...">
     </div>
+
+    <textarea id="noteInput" placeholder="Tilføj en lille note (valgfrit)..."></textarea>
+
     <button class="nav-btn" id="confirmBtn" onclick="confirmLog()">Gem</button>
-    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:10px; color:#8e8e93; cursor:pointer;">Fortryd</button>
+    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:5px; color:#8e8e93; cursor:pointer;">Fortryd</button>
   </div>
 </div>
 
@@ -145,7 +166,10 @@ function importData() {
 function showScreen(id) {
     document.getElementById('main-screen').style.display = (id === 'main-screen' ? 'block' : 'none');
     document.getElementById('material-screen').style.display = (id === 'material-screen' ? 'block' : 'none');
-    if(id === 'material-screen') renderMaterials();
+    if(id === 'material-screen') {
+        document.getElementById('materialSearch').value = "";
+        renderMaterials();
+    }
 }
 
 function setDuration(val) {
@@ -156,11 +180,14 @@ function setDuration(val) {
 
 function openLog(inst) {
     editingLogId = null;
-    currentInstrument = inst; setDuration(1);
+    currentInstrument = inst; 
+    setDuration(1);
     document.getElementById("dialogTitle").innerText = inst;
     document.getElementById("editDateSection").style.display = "none";
     document.getElementById("standardInputs").style.display = "block";
     document.getElementById("materialInput").value = "";
+    document.getElementById("noteInput").value = "";
+    
     const select = document.getElementById("materialSelect");
     select.innerHTML = '<option value="">-- Tidligere materiale --</option>';
     [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))].forEach(m => {
@@ -174,16 +201,32 @@ function openEditDate(id) {
     const log = logs.find(l => l.id === id);
     if(!log) return;
     editingLogId = id;
-    document.getElementById("dialogTitle").innerText = "Ret Dato";
+    document.getElementById("dialogTitle").innerText = "Rediger log";
     document.getElementById("editDateSection").style.display = "block";
     document.getElementById("standardInputs").style.display = "none";
     document.getElementById("editDateInput").value = log.isoDate;
+    document.getElementById("noteInput").value = log.note || "";
     document.getElementById("materialDialog").style.display = "block";
 }
 
 function closeDialog() { document.getElementById("materialDialog").style.display = "none"; }
 
+function checkMilestones(isoDate) {
+    const totalHoursToday = logs
+        .filter(l => l.isoDate === isoDate)
+        .reduce((sum, l) => sum + l.hours, 0);
+
+    if (totalHoursToday === 4) {
+        alert("Stærkt! - du har idag øvet 4 timer. Rigtig godt gået!");
+    } else if (totalHoursToday === 5) {
+        alert("Fantastisk! - du har idag øvet 5 timer. Hold nu en velfortjent pause");
+    }
+}
+
 function confirmLog() {
+    const noteVal = document.getElementById("noteInput").value.trim();
+    let targetDate = "";
+
     if(editingLogId) {
         const newDateVal = document.getElementById("editDateInput").value;
         const logIndex = logs.findIndex(l => l.id === editingLogId);
@@ -191,26 +234,40 @@ function confirmLog() {
             logs[logIndex].isoDate = newDateVal;
             const dateObj = new Date(newDateVal);
             logs[logIndex].date = dateObj.toLocaleDateString('da-DK');
+            logs[logIndex].note = noteVal;
+            targetDate = newDateVal;
         }
     } else {
         const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
         const today = new Date();
+        const isoToday = today.toISOString().split('T')[0];
         logs.push({
             id: Date.now(),
             date: today.toLocaleDateString('da-DK'),
-            isoDate: today.toISOString().split('T')[0],
+            isoDate: isoToday,
             instrument: currentInstrument,
             material: finalMaterial,
-            hours: currentDuration
+            hours: currentDuration,
+            note: noteVal
         });
+        targetDate = isoToday;
     }
-    save(); closeDialog();
+    
+    save(); 
+    closeDialog();
+    checkMilestones(targetDate);
     if(document.getElementById('material-screen').style.display === 'block') renderMaterials();
 }
 
 function deleteEntry(id, event) {
     event.stopPropagation();
-    if(confirm("Slet?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+    if(confirm("Slet denne log?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+}
+
+function toggleDropdown(id) {
+    const el = document.getElementById(id);
+    const isVisible = el.style.display === 'block';
+    el.style.display = isVisible ? 'none' : 'block';
 }
 
 function toggleHistory(id) {
@@ -220,15 +277,35 @@ function toggleHistory(id) {
 
 function renderMaterials() {
     const container = document.getElementById("materialContent");
+    const searchTerm = document.getElementById("materialSearch").value.toLowerCase();
     container.innerHTML = "";
+    
     const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
     const colors = ["orgel", "trommer", "klaver", "teori"];
 
     insts.forEach((inst, i) => {
-        const instLogs = logs.filter(l => l.instrument === inst);
+        let instLogs = logs.filter(l => l.instrument === inst);
+        
+        // Filtrering baseret på søgning
+        if (searchTerm) {
+            instLogs = instLogs.filter(l => 
+                l.material.toLowerCase().includes(searchTerm) || 
+                (l.note && l.note.toLowerCase().includes(searchTerm))
+            );
+        }
+
         if(instLogs.length === 0) return;
         
-        let html = `<div class="inst-card"><div class="inst-banner banner-${colors[i]}"><span>${inst}</span></div>`;
+        const dropdownId = `inst-drop-${i}`;
+        let html = `
+            <div class="inst-card">
+                <div class="inst-banner banner-${colors[i]}" onclick="toggleDropdown('${dropdownId}')">
+                    <span>${inst}</span>
+                    <span style="font-size:12px;">Tryk for at se ▼</span>
+                </div>
+                <div id="${dropdownId}" class="inst-content" style="${searchTerm ? 'display:block' : ''}">
+        `;
+
         const grouped = {};
         instLogs.forEach(l => {
             if(!grouped[l.material]) grouped[l.material] = { total: 0, entries: [] };
@@ -238,23 +315,28 @@ function renderMaterials() {
 
         Object.keys(grouped).forEach((mat, idx) => {
             const divId = `hist-${i}-${idx}`;
-            html += `<div class="material-header" onclick="toggleHistory('${divId}')">
-                <strong>${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong>
-                <span>▼</span>
-            </div>
-            <div id="${divId}" class="history-list">
-                ${grouped[mat].entries.slice().sort((a,b) => b.isoDate.localeCompare(a.isoDate)).map(e => `
-                    <div class="history-item">
-                        <span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span>
-                        <div>
-                            <button style="background:none; border:none; color:#8e8e93; margin-right:15px; font-size:18px;" onclick="openEditDate(${e.id})">✎</button>
-                            <button style="background:none; border:none; color:#ff3b30; font-size:18px;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
+            html += `
+                <div class="material-header" onclick="toggleHistory('${divId}')">
+                    <strong>${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong>
+                    <span>▼</span>
+                </div>
+                <div id="${divId}" class="history-list">
+                    ${grouped[mat].entries.slice().sort((a,b) => b.isoDate.localeCompare(a.isoDate)).map(e => `
+                        <div class="history-item">
+                            <div class="history-row">
+                                <span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span>
+                                <div>
+                                    <button style="background:none; border:none; color:#8e8e93; margin-right:15px; font-size:18px;" onclick="openEditDate(${e.id})">✎</button>
+                                    <button style="background:none; border:none; color:#ff3b30; font-size:18px;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
+                                </div>
+                            </div>
+                            ${e.note ? `<div class="note-text">Note: ${e.note}</div>` : ''}
                         </div>
-                    </div>
-                `).join('')}
-            </div>`;
+                    `).join('')}
+                </div>`;
         });
-        container.innerHTML += html + "</div>";
+        html += `</div></div>`;
+        container.innerHTML += html;
     });
 }
 
@@ -309,33 +391,11 @@ function updateChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: { 
-                y: { 
-                    beginAtZero: true, 
-                    min: 0, 
-                    ticks: { stepSize: 1, font: { size: 11 } },
-                    grid: { color: "rgba(0,0,0,0.05)" } 
-                },
-                x: { 
-                    ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } },
-                    grid: { 
-                        display: true, 
-                        drawOnChartArea: true,
-                        color: "rgba(0,0,0,0.1)", 
-                        lineWidth: 1
-                    } 
-                }
+                y: { beginAtZero: true, min: 0, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: "rgba(0,0,0,0.05)" } },
+                x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { display: true, color: "rgba(0,0,0,0.1)" } }
             },
             plugins: { 
-                legend: { 
-                    position: 'bottom', 
-                    labels: { 
-                        usePointStyle: true, 
-                        pointStyle: 'circle',
-                        boxWidth: 5, // Gør cirklerne mindre
-                        padding: 15, // Giver lidt mere luft omkring dem
-                        font: { size: 10 } 
-                    } 
-                } 
+                legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 5, padding: 15, font: { size: 10 } } } 
             }
         }
     });
