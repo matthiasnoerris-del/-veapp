@@ -360,7 +360,8 @@ function updateChart() {
         const dataPoints = days.map(d => {
             const sum = logs.filter(l => l.isoDate === d && l.instrument === inst)
                            .reduce((s, c) => s + c.hours, 0);
-            return sum === 0 ? null : sum; 
+            // Her ændret fra null til 0 så grafen går i bund
+            return sum; 
         });
         return {
             label: inst,
@@ -372,7 +373,7 @@ function updateChart() {
             tension: 0.3, 
             pointRadius: 4,
             pointBackgroundColor: color,
-            spanGaps: true
+            spanGaps: false // Her ændret til false for at tvinge den ned til 0 i stedet for at bygge bro
         };
     });
 
