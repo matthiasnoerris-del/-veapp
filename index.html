@@ -65,7 +65,6 @@ textarea { height: 80px; resize: none; }
 .time-btn { padding: 12px; border: 2px solid #e5e5ea; border-radius: 14px; background: none; font-weight: 700; cursor: pointer; }
 .time-btn.active { background: #1c1c1e; color: white; border-color: #1c1c1e; }
 
-/* Styles til den nye balance fane */
 .stat-section { margin-bottom: 25px; }
 .stat-title { font-weight: 800; font-size: 14px; color: #8e8e93; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
 .stat-value { font-size: 24px; font-weight: 800; margin-bottom: 5px; }
@@ -110,8 +109,8 @@ textarea { height: 80px; resize: none; }
     </div>
   </div>
 
-  <button class="nav-btn" onclick="showScreen('material-screen')">Se Øve-materiale</button>
-  <button class="nav-btn" style="background:#5e5ce6" onclick="showScreen('balance-screen')">Øve Balance</button>
+  <button class="nav-btn" onclick="showScreen('material-screen')">Øvemateriale</button>
+  <button class="nav-btn" onclick="showScreen('balance-screen')">Øvestatistik</button>
   
   <div class="backup-section">
       <span onclick="exportData()" style="cursor:pointer">Backup</span> | 
@@ -207,7 +206,6 @@ function showScreen(id) {
     }
 }
 
-// HJÆLPEFUNKTIONER TIL STATISTIK
 function getISOWeek(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -218,87 +216,57 @@ function getISOWeek(d) {
 
 function renderBalance() {
     if (logs.length === 0) return;
-
     const now = new Date();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
-    // 1. Timer i ugen (sidste 7 dage)
     const weekTotal = logs
         .filter(l => new Date(l.isoDate) >= sevenDaysAgo)
         .reduce((sum, l) => sum + l.hours, 0);
     document.getElementById('weekTotal').innerText = weekTotal + " timer";
 
-    // 2. Gennemsnitlig pr. dag i alt
     const uniqueDates = [...new Set(logs.map(l => l.isoDate))].length;
     const totalHours = logs.reduce((sum, l) => sum + l.hours, 0);
     const dailyAvg = (totalHours / uniqueDates).toFixed(1);
     document.getElementById('dailyAvg').innerText = dailyAvg + " timer";
 
-    // 3. Top 4 prioritering
     const priorities = {};
     logs.forEach(l => {
         priorities[l.instrument] = (priorities[l.instrument] || 0) + l.hours;
     });
-    
-    const sortedPrio = Object.entries(priorities)
-        .sort((a,b) => b[1] - a[1])
-        .slice(0, 4);
+    const sortedPrio = Object.entries(priorities).sort((a,b) => b[1] - a[1]).slice(0, 4);
 
     let prioHtml = "";
     sortedPrio.forEach(([inst, hours], index) => {
         const pct = Math.round((hours / totalHours) * 100);
-        prioHtml += `
-            <div class="balance-item">
-                <span class="balance-rank">${index + 1}.</span>
-                <span class="balance-label">${inst}</span>
-                <span class="balance-pct">${hours}t (${pct}%)</span>
-            </div>`;
+        prioHtml += `<div class="balance-item"><span class="balance-rank">${index + 1}.</span><span class="balance-label">${inst}</span><span class="balance-pct">${hours}t (${pct}%)</span></div>`;
     });
     document.getElementById('topPriorities').innerHTML = prioHtml;
 
-    // 4. Gennemsnit pr. disciplin (Pr uge / Pr session)
     const weekCount = [...new Set(logs.map(l => getISOWeek(new Date(l.isoDate))))].length || 1;
     const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
     let avgHtml = "";
-    
     insts.forEach(inst => {
         const instLogs = logs.filter(l => l.instrument === inst);
         const instTotal = instLogs.reduce((sum, l) => sum + l.hours, 0);
         const instAvgWeek = (instTotal / weekCount).toFixed(1);
         const instAvgSession = instLogs.length ? (instTotal / instLogs.length).toFixed(1) : 0;
-        
-        avgHtml += `
-            <div class="balance-item">
-                <span class="balance-label">${inst}</span>
-                <span class="balance-pct">${instAvgWeek}t / uge · ${instAvgSession}t / dag</span>
-            </div>`;
+        avgHtml += `<div class="balance-item"><span class="balance-label">${inst}</span><span class="balance-pct">${instAvgWeek}t / uge · ${instAvgSession}t / dag</span></div>`;
     });
     document.getElementById('disciplineAverages').innerHTML = avgHtml;
 
-    // 5. Mest aktive uger
     const weeks = {};
     logs.forEach(l => {
         const w = getISOWeek(new Date(l.isoDate));
         weeks[w] = (weeks[w] || 0) + l.hours;
     });
-    
-    const sortedWeeks = Object.entries(weeks)
-        .sort((a,b) => b[1] - a[1])
-        .slice(0, 3);
-
+    const sortedWeeks = Object.entries(weeks).sort((a,b) => b[1] - a[1]).slice(0, 3);
     let weekHtml = "";
     sortedWeeks.forEach(([week, hours]) => {
-        weekHtml += `
-            <div class="balance-item">
-                <span class="balance-label">Uge ${week.split('-W')[1]} (${week.split('-')[0]})</span>
-                <span class="balance-pct">${hours} timer</span>
-            </div>`;
+        weekHtml += `<div class="balance-item"><span class="balance-label">Uge ${week.split('-W')[1]} (${week.split('-')[0]})</span><span class="balance-pct">${hours} timer</span></div>`;
     });
     document.getElementById('activeWeeks').innerHTML = weekHtml;
 }
-
-// --- RESTEN AF DIN KODE UÆNDRET ---
 
 function setDuration(val) {
     currentDuration = val;
@@ -315,7 +283,6 @@ function openLog(inst) {
     document.getElementById("standardInputs").style.display = "block";
     document.getElementById("materialInput").value = "";
     document.getElementById("noteInput").value = "";
-    
     const select = document.getElementById("materialSelect");
     select.innerHTML = '<option value="">-- Tidligere materiale --</option>';
     [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))].forEach(m => {
@@ -340,21 +307,14 @@ function openEditDate(id) {
 function closeDialog() { document.getElementById("materialDialog").style.display = "none"; }
 
 function checkMilestones(isoDate) {
-    const totalHoursToday = logs
-        .filter(l => l.isoDate === isoDate)
-        .reduce((sum, l) => sum + l.hours, 0);
-
-    if (totalHoursToday === 4) {
-        alert("Stærkt! Du har øvet i 4 timer i dag.");
-    } else if (totalHoursToday === 5) {
-        alert("Fantastisk! Du har øvet i 5 timer i dag. Tid til en velfortjent pause!");
-    }
+    const totalHoursToday = logs.filter(l => l.isoDate === isoDate).reduce((sum, l) => sum + l.hours, 0);
+    if (totalHoursToday === 4) alert("Stærkt! Du har øvet i 4 timer i dag.");
+    else if (totalHoursToday === 5) alert("Fantastisk! Du har øvet i 5 timer i dag. Tid til en velfortjent pause!");
 }
 
 function confirmLog() {
     const noteVal = document.getElementById("noteInput").value.trim();
     let targetDate = "";
-
     if(editingLogId) {
         const newDateVal = document.getElementById("editDateInput").value;
         const logIndex = logs.findIndex(l => l.id === editingLogId);
@@ -369,18 +329,9 @@ function confirmLog() {
         const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
         const today = new Date();
         const isoToday = today.toISOString().split('T')[0];
-        logs.push({
-            id: Date.now(),
-            date: today.toLocaleDateString('da-DK'),
-            isoDate: isoToday,
-            instrument: currentInstrument,
-            material: finalMaterial,
-            hours: currentDuration,
-            note: noteVal
-        });
+        logs.push({id: Date.now(), date: today.toLocaleDateString('da-DK'), isoDate: isoToday, instrument: currentInstrument, material: finalMaterial, hours: currentDuration, note: noteVal});
         targetDate = isoToday;
     }
-    
     save(); 
     closeDialog();
     checkMilestones(targetDate);
@@ -394,8 +345,7 @@ function deleteEntry(id, event) {
 
 function toggleDropdown(id) {
     const el = document.getElementById(id);
-    const isVisible = el.style.display === 'block';
-    el.style.display = isVisible ? 'none' : 'block';
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
 function toggleHistory(id) {
@@ -407,58 +357,23 @@ function renderMaterials() {
     const container = document.getElementById("materialContent");
     const searchTerm = document.getElementById("materialSearch").value.toLowerCase();
     container.innerHTML = "";
-    
     const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
     const colors = ["orgel", "trommer", "klaver", "teori"];
-
     insts.forEach((inst, i) => {
         let instLogs = logs.filter(l => l.instrument === inst);
-        if (searchTerm) {
-            instLogs = instLogs.filter(l => 
-                l.material.toLowerCase().includes(searchTerm) || 
-                (l.note && l.note.toLowerCase().includes(searchTerm))
-            );
-        }
+        if (searchTerm) instLogs = instLogs.filter(l => l.material.toLowerCase().includes(searchTerm) || (l.note && l.note.toLowerCase().includes(searchTerm)));
         if(instLogs.length === 0) return;
-        
         const dropdownId = `inst-drop-${i}`;
-        let html = `
-            <div class="inst-card">
-                <div class="inst-banner banner-${colors[i]}" onclick="toggleDropdown('${dropdownId}')">
-                    <span>${inst}</span>
-                    <span>▼</span>
-                </div>
-                <div id="${dropdownId}" class="inst-content" style="${searchTerm ? 'display:block' : ''}">
-        `;
-
+        let html = `<div class="inst-card"><div class="inst-banner banner-${colors[i]}" onclick="toggleDropdown('${dropdownId}')"><span>${inst}</span><span>▼</span></div><div id="${dropdownId}" class="inst-content" style="${searchTerm ? 'display:block' : ''}">`;
         const grouped = {};
         instLogs.forEach(l => {
             if(!grouped[l.material]) grouped[l.material] = { total: 0, entries: [] };
             grouped[l.material].total += l.hours;
             grouped[l.material].entries.push(l);
         });
-
         Object.keys(grouped).forEach((mat, idx) => {
             const divId = `hist-${i}-${idx}`;
-            html += `
-                <div class="material-header" onclick="toggleHistory('${divId}')">
-                    <strong>${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong>
-                    <span>▼</span>
-                </div>
-                <div id="${divId}" class="history-list">
-                    ${grouped[mat].entries.slice().sort((a,b) => b.isoDate.localeCompare(a.isoDate)).map(e => `
-                        <div class="history-item">
-                            <div class="history-row">
-                                <span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span>
-                                <div>
-                                    <button style="background:none; border:none; color:#8e8e93; margin-right:15px; font-size:18px;" onclick="openEditDate(${e.id})">✎</button>
-                                    <button style="background:none; border:none; color:#ff3b30; font-size:18px;" onclick="deleteEntry(${e.id}, event)">🗑️</button>
-                                </div>
-                            </div>
-                            ${e.note ? `<div class="note-text">Note: ${e.note}</div>` : ''}
-                        </div>
-                    `).join('')}
-                </div>`;
+            html += `<div class="material-header" onclick="toggleHistory('${divId}')"><strong>${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong><span>▼</span></div><div id="${divId}" class="history-list">${grouped[mat].entries.slice().sort((a,b) => b.isoDate.localeCompare(a.isoDate)).map(e => `<div class="history-item"><div class="history-row"><span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span><div><button style="background:none; border:none; color:#8e8e93; margin-right:15px; font-size:18px;" onclick="openEditDate(${e.id})">✎</button><button style="background:none; border:none; color:#ff3b30; font-size:18px;" onclick="deleteEntry(${e.id}, event)">🗑️</button></div></div>${e.note ? `<div class="note-text">Note: ${e.note}</div>` : ''}</div>`).join('')}</div>`;
         });
         html += `</div></div>`;
         container.innerHTML += html;
@@ -468,60 +383,17 @@ function renderMaterials() {
 let chart;
 function updateChart() {
     let latestDate = new Date();
-    logs.forEach(l => {
-        let logD = new Date(l.isoDate);
-        if (logD > latestDate) latestDate = logD;
-    });
-
+    logs.forEach(l => { let logD = new Date(l.isoDate); if (logD > latestDate) latestDate = logD; });
     const days = [];
-    for(let i=13; i>=0; i--) {
-        const d = new Date(latestDate);
-        d.setDate(latestDate.getDate() - i);
-        days.push(d.toISOString().split('T')[0]);
-    }
-    
-    const labels = days.map(d => {
-        const date = new Date(d);
-        return date.getDate() + ". " + date.toLocaleString('da-DK', {month:'short'});
-    });
-
+    for(let i=13; i>=0; i--) { const d = new Date(latestDate); d.setDate(latestDate.getDate() - i); days.push(d.toISOString().split('T')[0]); }
+    const labels = days.map(d => { const date = new Date(d); return date.getDate() + ". " + date.toLocaleString('da-DK', {month:'short'}); });
     const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
         const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#ff9f0a":"#bf5af2");
-        const dataPoints = days.map(d => {
-            const sum = logs.filter(l => l.isoDate === d && l.instrument === inst)
-                           .reduce((s, c) => s + c.hours, 0);
-            return sum; 
-        });
-        return {
-            label: inst,
-            data: dataPoints,
-            borderColor: color, 
-            backgroundColor: "transparent",
-            borderWidth: 3,
-            fill: false, 
-            tension: 0.3, 
-            pointRadius: 4,
-            pointBackgroundColor: color,
-            spanGaps: false
-        };
+        const dataPoints = days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0));
+        return {label: inst, data: dataPoints, borderColor: color, backgroundColor: "transparent", borderWidth: 3, fill: false, tension: 0.3, pointRadius: 4, pointBackgroundColor: color, spanGaps: false};
     });
-
     if(chart) chart.destroy();
-    chart = new Chart(document.getElementById("progressChart"), {
-        type: 'line',
-        data: { labels, datasets },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { 
-                y: { beginAtZero: true, min: 0, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: "rgba(0,0,0,0.05)" } },
-                x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { display: true, color: "rgba(0,0,0,0.1)" } }
-            },
-            plugins: { 
-                legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 5, padding: 15, font: { size: 10 } } } 
-            }
-        }
-    });
+    chart = new Chart(document.getElementById("progressChart"), {type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, min: 0, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: "rgba(0,0,0,0.05)" } }, x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { display: true, color: "rgba(0,0,0,0.1)" } } }, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 5, padding: 15, font: { size: 10 } } } } }});
 }
 
 function exportData() { prompt("Backup:", JSON.stringify(logs)); }
