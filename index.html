@@ -65,6 +65,16 @@ textarea { height: 80px; resize: none; }
 .time-btn { padding: 12px; border: 2px solid #e5e5ea; border-radius: 14px; background: none; font-weight: 700; cursor: pointer; }
 .time-btn.active { background: #1c1c1e; color: white; border-color: #1c1c1e; }
 
+/* Styles til den nye balance fane */
+.stat-section { margin-bottom: 25px; }
+.stat-title { font-weight: 800; font-size: 14px; color: #8e8e93; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
+.stat-value { font-size: 24px; font-weight: 800; margin-bottom: 5px; }
+.stat-subtext { font-size: 13px; color: #8e8e93; margin-bottom: 15px; }
+.balance-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f2f2f7; }
+.balance-rank { font-weight: 800; color: #1c1c1e; width: 25px; }
+.balance-label { flex-grow: 1; font-weight: 600; }
+.balance-pct { font-weight: 700; color: #8e8e93; }
+
 .search-container { margin-bottom: 15px; }
 .search-input { background: white !important; border: 2px solid #e5e5ea !important; }
 </style>
@@ -101,6 +111,7 @@ textarea { height: 80px; resize: none; }
   </div>
 
   <button class="nav-btn" onclick="showScreen('material-screen')">Se Øve-materiale</button>
+  <button class="nav-btn" style="background:#5e5ce6" onclick="showScreen('balance-screen')">Øve Balance</button>
   
   <div class="backup-section">
       <span onclick="exportData()" style="cursor:pointer">Backup</span> | 
@@ -110,23 +121,52 @@ textarea { height: 80px; resize: none; }
 
 <div id="material-screen" class="container" style="display:none">
     <button class="nav-btn" style="background:#8e8e93; margin-bottom:15px;" onclick="showScreen('main-screen')">⬅ Tilbage</button>
-    
     <div class="search-container">
         <input type="text" id="materialSearch" class="search-input" placeholder="Søg i materiale eller noter..." onkeyup="renderMaterials()">
     </div>
-
     <div id="materialContent"></div>
+</div>
+
+<div id="balance-screen" class="container" style="display:none">
+    <button class="nav-btn" style="background:#8e8e93; margin-bottom:15px;" onclick="showScreen('main-screen')">⬅ Tilbage</button>
+    
+    <div class="card">
+        <div class="stat-section">
+            <div class="stat-title">Denne uge</div>
+            <div class="stat-value" id="weekTotal">0 timer</div>
+            <div class="stat-subtext">Total tid øvet de sidste 7 dage</div>
+        </div>
+        <div class="stat-section">
+            <div class="stat-title">Dagligt gennemsnit</div>
+            <div class="stat-value" id="dailyAvg">0 timer</div>
+            <div class="stat-subtext">Baseret på alle dine logs</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="stat-title">Top Prioritering (Alle logs)</div>
+        <div id="topPriorities"></div>
+    </div>
+
+    <div class="card">
+        <div class="stat-title">Gennemsnit pr. disciplin</div>
+        <div style="font-size: 12px; color: #8e8e93; margin-bottom: 10px;">(Timer pr. uge / Timer pr. session)</div>
+        <div id="disciplineAverages"></div>
+    </div>
+
+    <div class="card">
+        <div class="stat-title">Mest aktive uger</div>
+        <div id="activeWeeks"></div>
+    </div>
 </div>
 
 <div id="materialDialog">
   <div class="dialog-box">
     <h2 id="dialogTitle" style="text-align:center; margin-top:0; margin-bottom:15px;"></h2>
-    
     <div id="editDateSection" style="display:none">
         <label style="font-size: 12px; color:#8e8e93;">Vælg ny dato:</label>
         <input type="date" id="editDateInput">
     </div>
-
     <div id="standardInputs">
         <div class="time-selector">
             <button id="btn30" class="time-btn" onclick="setDuration(0.5)">30 min</button>
@@ -135,9 +175,7 @@ textarea { height: 80px; resize: none; }
         <select id="materialSelect"><option value="">-- Tidligere materiale --</option></select>
         <input type="text" id="materialInput" placeholder="Nyt materiale...">
     </div>
-
     <textarea id="noteInput" placeholder="Tilføj en note (valgfrit)..."></textarea>
-
     <button class="nav-btn" id="confirmBtn" onclick="confirmLog()">Gem</button>
     <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:5px; color:#8e8e93; cursor:pointer;">Fortryd</button>
   </div>
@@ -155,20 +193,112 @@ function save() {
     updateUI();
 }
 
-function exportData() { prompt("Backup:", JSON.stringify(logs)); }
-function importData() {
-    const data = prompt("Indsæt backup:");
-    if(data) { try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); } }
-}
-
 function showScreen(id) {
     document.getElementById('main-screen').style.display = (id === 'main-screen' ? 'block' : 'none');
     document.getElementById('material-screen').style.display = (id === 'material-screen' ? 'block' : 'none');
+    document.getElementById('balance-screen').style.display = (id === 'balance-screen' ? 'block' : 'none');
+    
     if(id === 'material-screen') {
         document.getElementById('materialSearch').value = "";
         renderMaterials();
     }
+    if(id === 'balance-screen') {
+        renderBalance();
+    }
 }
+
+// HJÆLPEFUNKTIONER TIL STATISTIK
+function getISOWeek(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return d.getUTCFullYear() + "-W" + weekNo;
+}
+
+function renderBalance() {
+    if (logs.length === 0) return;
+
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 7);
+
+    // 1. Timer i ugen (sidste 7 dage)
+    const weekTotal = logs
+        .filter(l => new Date(l.isoDate) >= sevenDaysAgo)
+        .reduce((sum, l) => sum + l.hours, 0);
+    document.getElementById('weekTotal').innerText = weekTotal + " timer";
+
+    // 2. Gennemsnitlig pr. dag i alt
+    const uniqueDates = [...new Set(logs.map(l => l.isoDate))].length;
+    const totalHours = logs.reduce((sum, l) => sum + l.hours, 0);
+    const dailyAvg = (totalHours / uniqueDates).toFixed(1);
+    document.getElementById('dailyAvg').innerText = dailyAvg + " timer";
+
+    // 3. Top 4 prioritering
+    const priorities = {};
+    logs.forEach(l => {
+        priorities[l.instrument] = (priorities[l.instrument] || 0) + l.hours;
+    });
+    
+    const sortedPrio = Object.entries(priorities)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 4);
+
+    let prioHtml = "";
+    sortedPrio.forEach(([inst, hours], index) => {
+        const pct = Math.round((hours / totalHours) * 100);
+        prioHtml += `
+            <div class="balance-item">
+                <span class="balance-rank">${index + 1}.</span>
+                <span class="balance-label">${inst}</span>
+                <span class="balance-pct">${hours}t (${pct}%)</span>
+            </div>`;
+    });
+    document.getElementById('topPriorities').innerHTML = prioHtml;
+
+    // 4. Gennemsnit pr. disciplin (Pr uge / Pr session)
+    const weekCount = [...new Set(logs.map(l => getISOWeek(new Date(l.isoDate))))].length || 1;
+    const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
+    let avgHtml = "";
+    
+    insts.forEach(inst => {
+        const instLogs = logs.filter(l => l.instrument === inst);
+        const instTotal = instLogs.reduce((sum, l) => sum + l.hours, 0);
+        const instAvgWeek = (instTotal / weekCount).toFixed(1);
+        const instAvgSession = instLogs.length ? (instTotal / instLogs.length).toFixed(1) : 0;
+        
+        avgHtml += `
+            <div class="balance-item">
+                <span class="balance-label">${inst}</span>
+                <span class="balance-pct">${instAvgWeek}t / uge · ${instAvgSession}t / dag</span>
+            </div>`;
+    });
+    document.getElementById('disciplineAverages').innerHTML = avgHtml;
+
+    // 5. Mest aktive uger
+    const weeks = {};
+    logs.forEach(l => {
+        const w = getISOWeek(new Date(l.isoDate));
+        weeks[w] = (weeks[w] || 0) + l.hours;
+    });
+    
+    const sortedWeeks = Object.entries(weeks)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 3);
+
+    let weekHtml = "";
+    sortedWeeks.forEach(([week, hours]) => {
+        weekHtml += `
+            <div class="balance-item">
+                <span class="balance-label">Uge ${week.split('-W')[1]} (${week.split('-')[0]})</span>
+                <span class="balance-pct">${hours} timer</span>
+            </div>`;
+    });
+    document.getElementById('activeWeeks').innerHTML = weekHtml;
+}
+
+// --- RESTEN AF DIN KODE UÆNDRET ---
 
 function setDuration(val) {
     currentDuration = val;
@@ -259,7 +389,7 @@ function confirmLog() {
 
 function deleteEntry(id, event) {
     event.stopPropagation();
-    if(confirm("Slet denne log?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); }
+    if(confirm("Slet denne log?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); if(document.getElementById('balance-screen').style.display === 'block') renderBalance(); }
 }
 
 function toggleDropdown(id) {
@@ -360,7 +490,6 @@ function updateChart() {
         const dataPoints = days.map(d => {
             const sum = logs.filter(l => l.isoDate === d && l.instrument === inst)
                            .reduce((s, c) => s + c.hours, 0);
-            // Her ændret fra null til 0 så grafen går i bund
             return sum; 
         });
         return {
@@ -373,7 +502,7 @@ function updateChart() {
             tension: 0.3, 
             pointRadius: 4,
             pointBackgroundColor: color,
-            spanGaps: false // Her ændret til false for at tvinge den ned til 0 i stedet for at bygge bro
+            spanGaps: false
         };
     });
 
@@ -393,6 +522,12 @@ function updateChart() {
             }
         }
     });
+}
+
+function exportData() { prompt("Backup:", JSON.stringify(logs)); }
+function importData() {
+    const data = prompt("Indsæt backup:");
+    if(data) { try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); } }
 }
 
 const updateUI = () => updateChart();
