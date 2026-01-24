@@ -19,6 +19,7 @@
 <style>
 :root {
   --orgel: #5e5ce6; --trommer: #ff375f; --klaver: #ff9f0a; --teori: #bf5af2; --bg: #f2f2f7;
+  --dark-brown: #5d4037; /* Definition af den mørkebrune farve */
 }
 
 body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #1c1c1e; }
@@ -54,6 +55,8 @@ h1 { text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800
 .note-text { font-size: 11px; color: #8e8e93; margin-top: 4px; font-style: italic; }
 
 .nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.nav-btn-brown { background: var(--dark-brown); } /* Mørkebrun klasse */
+
 .backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 30px; }
 
 #materialDialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(10px); }
@@ -110,7 +113,7 @@ textarea { height: 80px; resize: none; }
   </div>
 
   <button class="nav-btn" onclick="showScreen('material-screen')">Øvemateriale</button>
-  <button class="nav-btn" onclick="showScreen('balance-screen')">Øvestatistik</button>
+  <button class="nav-btn nav-btn-brown" onclick="showScreen('balance-screen')">Øvestatistik</button>
   
   <div class="backup-section">
       <span onclick="exportData()" style="cursor:pointer">Backup</span> | 
@@ -196,14 +199,8 @@ function showScreen(id) {
     document.getElementById('main-screen').style.display = (id === 'main-screen' ? 'block' : 'none');
     document.getElementById('material-screen').style.display = (id === 'material-screen' ? 'block' : 'none');
     document.getElementById('balance-screen').style.display = (id === 'balance-screen' ? 'block' : 'none');
-    
-    if(id === 'material-screen') {
-        document.getElementById('materialSearch').value = "";
-        renderMaterials();
-    }
-    if(id === 'balance-screen') {
-        renderBalance();
-    }
+    if(id === 'material-screen') { document.getElementById('materialSearch').value = ""; renderMaterials(); }
+    if(id === 'balance-screen') { renderBalance(); }
 }
 
 function getISOWeek(d) {
@@ -219,30 +216,21 @@ function renderBalance() {
     const now = new Date();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
-
-    const weekTotal = logs
-        .filter(l => new Date(l.isoDate) >= sevenDaysAgo)
-        .reduce((sum, l) => sum + l.hours, 0);
+    const weekTotal = logs.filter(l => new Date(l.isoDate) >= sevenDaysAgo).reduce((sum, l) => sum + l.hours, 0);
     document.getElementById('weekTotal').innerText = weekTotal + " timer";
-
     const uniqueDates = [...new Set(logs.map(l => l.isoDate))].length;
     const totalHours = logs.reduce((sum, l) => sum + l.hours, 0);
     const dailyAvg = (totalHours / uniqueDates).toFixed(1);
     document.getElementById('dailyAvg').innerText = dailyAvg + " timer";
-
     const priorities = {};
-    logs.forEach(l => {
-        priorities[l.instrument] = (priorities[l.instrument] || 0) + l.hours;
-    });
+    logs.forEach(l => { priorities[l.instrument] = (priorities[l.instrument] || 0) + l.hours; });
     const sortedPrio = Object.entries(priorities).sort((a,b) => b[1] - a[1]).slice(0, 4);
-
     let prioHtml = "";
     sortedPrio.forEach(([inst, hours], index) => {
         const pct = Math.round((hours / totalHours) * 100);
         prioHtml += `<div class="balance-item"><span class="balance-rank">${index + 1}.</span><span class="balance-label">${inst}</span><span class="balance-pct">${hours}t (${pct}%)</span></div>`;
     });
     document.getElementById('topPriorities').innerHTML = prioHtml;
-
     const weekCount = [...new Set(logs.map(l => getISOWeek(new Date(l.isoDate))))].length || 1;
     const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
     let avgHtml = "";
@@ -254,12 +242,8 @@ function renderBalance() {
         avgHtml += `<div class="balance-item"><span class="balance-label">${inst}</span><span class="balance-pct">${instAvgWeek}t / uge · ${instAvgSession}t / dag</span></div>`;
     });
     document.getElementById('disciplineAverages').innerHTML = avgHtml;
-
     const weeks = {};
-    logs.forEach(l => {
-        const w = getISOWeek(new Date(l.isoDate));
-        weeks[w] = (weeks[w] || 0) + l.hours;
-    });
+    logs.forEach(l => { const w = getISOWeek(new Date(l.isoDate)); weeks[w] = (weeks[w] || 0) + l.hours; });
     const sortedWeeks = Object.entries(weeks).sort((a,b) => b[1] - a[1]).slice(0, 3);
     let weekHtml = "";
     sortedWeeks.forEach(([week, hours]) => {
@@ -332,9 +316,7 @@ function confirmLog() {
         logs.push({id: Date.now(), date: today.toLocaleDateString('da-DK'), isoDate: isoToday, instrument: currentInstrument, material: finalMaterial, hours: currentDuration, note: noteVal});
         targetDate = isoToday;
     }
-    save(); 
-    closeDialog();
-    checkMilestones(targetDate);
+    save(); closeDialog(); checkMilestones(targetDate);
     if(document.getElementById('material-screen').style.display === 'block') renderMaterials();
 }
 
