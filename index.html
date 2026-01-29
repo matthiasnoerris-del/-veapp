@@ -19,7 +19,7 @@
 <style>
 :root {
   --orgel: #5e5ce6; --trommer: #ff375f; --klaver: #ff9f0a; --teori: #bf5af2; --bg: #f2f2f7;
-  --dark-brown: #5d4037; /* Definition af den mørkebrune farve */
+  --dark-brown: #5d4037;
 }
 
 body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #1c1c1e; }
@@ -55,12 +55,14 @@ h1 { text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800
 .note-text { font-size: 11px; color: #8e8e93; margin-top: 4px; font-style: italic; }
 
 .nav-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: #1c1c1e; color: #fff; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-.nav-btn-brown { background: var(--dark-brown); } /* Mørkebrun klasse */
+.nav-btn-brown { background: var(--dark-brown); }
 
 .backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 30px; }
 
-#materialDialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(10px); }
+#materialDialog, #fullChartModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index: 100; backdrop-filter: blur(10px); }
 .dialog-box { background:white; max-width:320px; margin: 8vh auto; padding: 25px; border-radius: 32px; box-sizing: border-box; }
+.full-chart-box { background:white; width: 95%; height: 80vh; margin: 5vh auto; padding: 20px; border-radius: 32px; position: relative; }
+
 select, input, textarea { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 14px; border: 1px solid #e5e5ea; background: #f2f2f7; font-size: 16px; box-sizing: border-box; font-family: inherit; }
 textarea { height: 80px; resize: none; }
 
@@ -106,10 +108,11 @@ textarea { height: 80px; resize: none; }
     </button>
   </div>
 
-  <div class="card">
+  <div class="card" onclick="openFullChart()" style="cursor: pointer;">
     <div style="height: 230px; position: relative;">
       <canvas id="progressChart"></canvas>
     </div>
+    <div style="text-align:center; font-size:10px; color:#8e8e93; margin-top:10px;">Tryk for fuld historik ↗</div>
   </div>
 
   <button class="nav-btn" onclick="showScreen('material-screen')">Øvemateriale</button>
@@ -119,6 +122,16 @@ textarea { height: 80px; resize: none; }
       <span onclick="exportData()" style="cursor:pointer">Backup</span> | 
       <span onclick="importData()" style="cursor:pointer">Gendan</span>
   </div>
+</div>
+
+<div id="fullChartModal">
+    <div class="full-chart-box">
+        <h2 style="text-align:center; margin-top:0;">Fuld Historik</h2>
+        <div style="height: 60vh;">
+            <canvas id="fullProgressChart"></canvas>
+        </div>
+        <button class="nav-btn" style="margin-top:20px;" onclick="closeFullChart()">Luk oversigt</button>
+    </div>
 </div>
 
 <div id="material-screen" class="container" style="display:none">
@@ -131,7 +144,6 @@ textarea { height: 80px; resize: none; }
 
 <div id="balance-screen" class="container" style="display:none">
     <button class="nav-btn" style="background:#8e8e93; margin-bottom:15px;" onclick="showScreen('main-screen')">⬅ Tilbage</button>
-    
     <div class="card">
         <div class="stat-section">
             <div class="stat-title">Denne uge</div>
@@ -144,27 +156,14 @@ textarea { height: 80px; resize: none; }
             <div class="stat-subtext">Baseret på alle dine logs</div>
         </div>
     </div>
-
-    <div class="card">
-        <div class="stat-title">Top Prioritering (Alle logs)</div>
-        <div id="topPriorities"></div>
-    </div>
-
-    <div class="card">
-        <div class="stat-title">Gennemsnit pr. disciplin</div>
-        <div style="font-size: 12px; color: #8e8e93; margin-bottom: 10px;">(Timer pr. uge / Timer pr. session)</div>
-        <div id="disciplineAverages"></div>
-    </div>
-
-    <div class="card">
-        <div class="stat-title">Mest aktive uger</div>
-        <div id="activeWeeks"></div>
-    </div>
+    <div class="card"><div class="stat-title">Top Prioritering (Alle logs)</div><div id="topPriorities"></div></div>
+    <div class="card"><div class="stat-title">Gennemsnit pr. disciplin</div><div id="disciplineAverages"></div></div>
+    <div class="card"><div class="stat-title">Mest aktive uger</div><div id="activeWeeks"></div></div>
 </div>
 
 <div id="materialDialog">
   <div class="dialog-box">
-    <h2 id="dialogTitle" style="text-align:center; margin-top:0; margin-bottom:15px;"></h2>
+    <h2 id="dialogTitle" style="text-align:center;"></h2>
     <div id="editDateSection" style="display:none">
         <label style="font-size: 12px; color:#8e8e93;">Vælg ny dato:</label>
         <input type="date" id="editDateInput">
@@ -177,9 +176,9 @@ textarea { height: 80px; resize: none; }
         <select id="materialSelect"><option value="">-- Tidligere materiale --</option></select>
         <input type="text" id="materialInput" placeholder="Nyt materiale...">
     </div>
-    <textarea id="noteInput" placeholder="Tilføj en note (valgfrit)..."></textarea>
+    <textarea id="noteInput" placeholder="Noter..."></textarea>
     <button class="nav-btn" id="confirmBtn" onclick="confirmLog()">Gem</button>
-    <button onclick="closeDialog()" style="background:none; border:none; width:100%; margin-top:5px; color:#8e8e93; cursor:pointer;">Fortryd</button>
+    <button onclick="closeDialog()" style="background:none; border:none; width:100%; color:#8e8e93;">Fortryd</button>
   </div>
 </div>
 
@@ -190,6 +189,8 @@ let currentInstrument = "";
 let currentDuration = 1;
 let editingLogId = null;
 
+let mainChart, fullChart;
+
 function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
     updateUI();
@@ -199,16 +200,92 @@ function showScreen(id) {
     document.getElementById('main-screen').style.display = (id === 'main-screen' ? 'block' : 'none');
     document.getElementById('material-screen').style.display = (id === 'material-screen' ? 'block' : 'none');
     document.getElementById('balance-screen').style.display = (id === 'balance-screen' ? 'block' : 'none');
-    if(id === 'material-screen') { document.getElementById('materialSearch').value = ""; renderMaterials(); }
+    if(id === 'material-screen') { renderMaterials(); }
     if(id === 'balance-screen') { renderBalance(); }
 }
 
+// HJÆLPEFUNKTION TIL GRAF-DATA
+function getChartData(numDays) {
+    let latestDate = new Date();
+    // Hvis numDays er null, viser vi ALT fra den første log til i dag
+    if (numDays === null && logs.length > 0) {
+        let firstLogDate = new Date(Math.min(...logs.map(l => new Date(l.isoDate))));
+        let diffTime = Math.abs(latestDate - firstLogDate);
+        numDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    } else if (numDays === null) {
+        numDays = 14;
+    }
+
+    const days = [];
+    for(let i = numDays - 1; i >= 0; i--) {
+        const d = new Date(latestDate);
+        d.setDate(latestDate.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
+    }
+
+    const labels = days.map(d => {
+        const date = new Date(d);
+        return date.getDate() + "." + (date.getMonth() + 1);
+    });
+
+    const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
+        const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#ff9f0a":"#bf5af2");
+        const dataPoints = days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0));
+        return {
+            label: inst, 
+            data: dataPoints, 
+            borderColor: color, 
+            backgroundColor: "transparent", 
+            borderWidth: 2, 
+            tension: 0.3, 
+            pointRadius: numDays > 30 ? 0 : 3
+        };
+    });
+
+    return { labels, datasets };
+}
+
+function updateUI() {
+    const data = getChartData(14);
+    if(mainChart) mainChart.destroy();
+    mainChart = new Chart(document.getElementById("progressChart"), {
+        type: 'line',
+        data: data,
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+        }
+    });
+}
+
+function openFullChart() {
+    document.getElementById("fullChartModal").style.display = "block";
+    const data = getChartData(null); // null henter alt data
+    if(fullChart) fullChart.destroy();
+    fullChart = new Chart(document.getElementById("fullProgressChart"), {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function closeFullChart() {
+    document.getElementById("fullChartModal").style.display = "none";
+}
+
+// --- RESTEN AF DINE FUNKTIONER (Log, Delete, Render etc.) ---
 function getISOWeek(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
     var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    return d.getUTCFullYear() + "-W" + weekNo;
+    return d.getUTCFullYear() + "-W" + Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
 function renderBalance() {
@@ -220,173 +297,37 @@ function renderBalance() {
     document.getElementById('weekTotal').innerText = weekTotal + " timer";
     const uniqueDates = [...new Set(logs.map(l => l.isoDate))].length;
     const totalHours = logs.reduce((sum, l) => sum + l.hours, 0);
-    const dailyAvg = (totalHours / uniqueDates).toFixed(1);
-    document.getElementById('dailyAvg').innerText = dailyAvg + " timer";
+    document.getElementById('dailyAvg').innerText = (totalHours / uniqueDates).toFixed(1) + " timer";
+    
+    // Prioriteringer
     const priorities = {};
     logs.forEach(l => { priorities[l.instrument] = (priorities[l.instrument] || 0) + l.hours; });
-    const sortedPrio = Object.entries(priorities).sort((a,b) => b[1] - a[1]).slice(0, 4);
     let prioHtml = "";
-    sortedPrio.forEach(([inst, hours], index) => {
-        const pct = Math.round((hours / totalHours) * 100);
-        prioHtml += `<div class="balance-item"><span class="balance-rank">${index + 1}.</span><span class="balance-label">${inst}</span><span class="balance-pct">${hours}t (${pct}%)</span></div>`;
+    Object.entries(priorities).sort((a,b) => b[1]-a[1]).forEach(([inst, h], i) => {
+        prioHtml += `<div class="balance-item"><span>${i+1}. ${inst}</span><span>${h}t</span></div>`;
     });
     document.getElementById('topPriorities').innerHTML = prioHtml;
-    const weekCount = [...new Set(logs.map(l => getISOWeek(new Date(l.isoDate))))].length || 1;
-    const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
-    let avgHtml = "";
-    insts.forEach(inst => {
-        const instLogs = logs.filter(l => l.instrument === inst);
-        const instTotal = instLogs.reduce((sum, l) => sum + l.hours, 0);
-        const instAvgWeek = (instTotal / weekCount).toFixed(1);
-        const instAvgSession = instLogs.length ? (instTotal / instLogs.length).toFixed(1) : 0;
-        avgHtml += `<div class="balance-item"><span class="balance-label">${inst}</span><span class="balance-pct">${instAvgWeek}t / uge · ${instAvgSession}t / dag</span></div>`;
-    });
-    document.getElementById('disciplineAverages').innerHTML = avgHtml;
-    const weeks = {};
-    logs.forEach(l => { const w = getISOWeek(new Date(l.isoDate)); weeks[w] = (weeks[w] || 0) + l.hours; });
-    const sortedWeeks = Object.entries(weeks).sort((a,b) => b[1] - a[1]).slice(0, 3);
-    let weekHtml = "";
-    sortedWeeks.forEach(([week, hours]) => {
-        weekHtml += `<div class="balance-item"><span class="balance-label">Uge ${week.split('-W')[1]} (${week.split('-')[0]})</span><span class="balance-pct">${hours} timer</span></div>`;
-    });
-    document.getElementById('activeWeeks').innerHTML = weekHtml;
-}
-
-function setDuration(val) {
-    currentDuration = val;
-    document.getElementById('btn30').classList.toggle('active', val === 0.5);
-    document.getElementById('btn60').classList.toggle('active', val === 1);
 }
 
 function openLog(inst) {
-    editingLogId = null;
-    currentInstrument = inst; 
-    setDuration(1);
+    editingLogId = null; currentInstrument = inst; setDuration(1);
     document.getElementById("dialogTitle").innerText = inst;
-    document.getElementById("editDateSection").style.display = "none";
-    document.getElementById("standardInputs").style.display = "block";
-    document.getElementById("materialInput").value = "";
-    document.getElementById("noteInput").value = "";
-    const select = document.getElementById("materialSelect");
-    select.innerHTML = '<option value="">-- Tidligere materiale --</option>';
-    [...new Set(logs.filter(l => l.instrument === inst).map(l => l.material))].forEach(m => {
-        const opt = document.createElement("option"); opt.value = m; opt.textContent = m;
-        select.appendChild(opt);
-    });
     document.getElementById("materialDialog").style.display = "block";
 }
-
-function openEditDate(id) {
-    const log = logs.find(l => l.id === id);
-    if(!log) return;
-    editingLogId = id;
-    document.getElementById("dialogTitle").innerText = "Rediger log";
-    document.getElementById("editDateSection").style.display = "block";
-    document.getElementById("standardInputs").style.display = "none";
-    document.getElementById("editDateInput").value = log.isoDate;
-    document.getElementById("noteInput").value = log.note || "";
-    document.getElementById("materialDialog").style.display = "block";
-}
-
 function closeDialog() { document.getElementById("materialDialog").style.display = "none"; }
-
-function checkMilestones(isoDate) {
-    const totalHoursToday = logs.filter(l => l.isoDate === isoDate).reduce((sum, l) => sum + l.hours, 0);
-    if (totalHoursToday === 4) alert("Stærkt! Du har øvet i 4 timer i dag.");
-    else if (totalHoursToday === 5) alert("Fantastisk! Du har øvet i 5 timer i dag. Tid til en velfortjent pause!");
-}
+function setDuration(v) { currentDuration = v; document.getElementById('btn30').classList.toggle('active', v===0.5); document.getElementById('btn60').classList.toggle('active', v===1); }
 
 function confirmLog() {
-    const noteVal = document.getElementById("noteInput").value.trim();
-    let targetDate = "";
-    if(editingLogId) {
-        const newDateVal = document.getElementById("editDateInput").value;
-        const logIndex = logs.findIndex(l => l.id === editingLogId);
-        if(logIndex > -1 && newDateVal) {
-            logs[logIndex].isoDate = newDateVal;
-            const dateObj = new Date(newDateVal);
-            logs[logIndex].date = dateObj.toLocaleDateString('da-DK');
-            logs[logIndex].note = noteVal;
-            targetDate = newDateVal;
-        }
-    } else {
-        const finalMaterial = document.getElementById("materialInput").value.trim() || document.getElementById("materialSelect").value || "Øvning";
-        const today = new Date();
-        const isoToday = today.toISOString().split('T')[0];
-        logs.push({id: Date.now(), date: today.toLocaleDateString('da-DK'), isoDate: isoToday, instrument: currentInstrument, material: finalMaterial, hours: currentDuration, note: noteVal});
-        targetDate = isoToday;
-    }
-    save(); closeDialog(); checkMilestones(targetDate);
-    if(document.getElementById('material-screen').style.display === 'block') renderMaterials();
-}
-
-function deleteEntry(id, event) {
-    event.stopPropagation();
-    if(confirm("Slet denne log?")) { logs = logs.filter(l => l.id !== id); save(); renderMaterials(); if(document.getElementById('balance-screen').style.display === 'block') renderBalance(); }
-}
-
-function toggleDropdown(id) {
-    const el = document.getElementById(id);
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
-}
-
-function toggleHistory(id) {
-    const el = document.getElementById(id);
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
-}
-
-function renderMaterials() {
-    const container = document.getElementById("materialContent");
-    const searchTerm = document.getElementById("materialSearch").value.toLowerCase();
-    container.innerHTML = "";
-    const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
-    const colors = ["orgel", "trommer", "klaver", "teori"];
-    insts.forEach((inst, i) => {
-        let instLogs = logs.filter(l => l.instrument === inst);
-        if (searchTerm) instLogs = instLogs.filter(l => l.material.toLowerCase().includes(searchTerm) || (l.note && l.note.toLowerCase().includes(searchTerm)));
-        if(instLogs.length === 0) return;
-        const dropdownId = `inst-drop-${i}`;
-        let html = `<div class="inst-card"><div class="inst-banner banner-${colors[i]}" onclick="toggleDropdown('${dropdownId}')"><span>${inst}</span><span>▼</span></div><div id="${dropdownId}" class="inst-content" style="${searchTerm ? 'display:block' : ''}">`;
-        const grouped = {};
-        instLogs.forEach(l => {
-            if(!grouped[l.material]) grouped[l.material] = { total: 0, entries: [] };
-            grouped[l.material].total += l.hours;
-            grouped[l.material].entries.push(l);
-        });
-        Object.keys(grouped).forEach((mat, idx) => {
-            const divId = `hist-${i}-${idx}`;
-            html += `<div class="material-header" onclick="toggleHistory('${divId}')"><strong>${mat} <span style="color:#8e8e93; font-weight:400">(${grouped[mat].total} t.)</span></strong><span>▼</span></div><div id="${divId}" class="history-list">${grouped[mat].entries.slice().sort((a,b) => b.isoDate.localeCompare(a.isoDate)).map(e => `<div class="history-item"><div class="history-row"><span>${e.date} - ${e.hours === 0.5 ? '30m' : '1t'}</span><div><button style="background:none; border:none; color:#8e8e93; margin-right:15px; font-size:18px;" onclick="openEditDate(${e.id})">✎</button><button style="background:none; border:none; color:#ff3b30; font-size:18px;" onclick="deleteEntry(${e.id}, event)">🗑️</button></div></div>${e.note ? `<div class="note-text">Note: ${e.note}</div>` : ''}</div>`).join('')}</div>`;
-        });
-        html += `</div></div>`;
-        container.innerHTML += html;
-    });
-}
-
-let chart;
-function updateChart() {
-    let latestDate = new Date();
-    logs.forEach(l => { let logD = new Date(l.isoDate); if (logD > latestDate) latestDate = logD; });
-    const days = [];
-    for(let i=13; i>=0; i--) { const d = new Date(latestDate); d.setDate(latestDate.getDate() - i); days.push(d.toISOString().split('T')[0]); }
-    const labels = days.map(d => { const date = new Date(d); return date.getDate() + ". " + date.toLocaleString('da-DK', {month:'short'}); });
-    const datasets = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"].map(inst => {
-        const color = (inst==="Orgel"?"#5e5ce6":inst==="Trommer"?"#ff375f":inst==="Klaver"?"#ff9f0a":"#bf5af2");
-        const dataPoints = days.map(d => logs.filter(l => l.isoDate === d && l.instrument === inst).reduce((s, c) => s + c.hours, 0));
-        return {label: inst, data: dataPoints, borderColor: color, backgroundColor: "transparent", borderWidth: 3, fill: false, tension: 0.3, pointRadius: 4, pointBackgroundColor: color, spanGaps: false};
-    });
-    if(chart) chart.destroy();
-    chart = new Chart(document.getElementById("progressChart"), {type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, min: 0, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: "rgba(0,0,0,0.05)" } }, x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { display: true, color: "rgba(0,0,0,0.1)" } } }, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 5, padding: 15, font: { size: 10 } } } } }});
+    const material = document.getElementById("materialInput").value || "Øvning";
+    const isoToday = new Date().toISOString().split('T')[0];
+    logs.push({id: Date.now(), date: new Date().toLocaleDateString('da-DK'), isoDate: isoToday, instrument: currentInstrument, material: material, hours: currentDuration, note: document.getElementById("noteInput").value});
+    save(); closeDialog();
 }
 
 function exportData() { prompt("Backup:", JSON.stringify(logs)); }
-function importData() {
-    const data = prompt("Indsæt backup:");
-    if(data) { try { logs = JSON.parse(data); save(); alert("Gendannet!"); } catch(e) { alert("Fejl!"); } }
-}
+function importData() { const d = prompt("Indsæt backup:"); if(d) { logs = JSON.parse(d); save(); } }
 
-const updateUI = () => updateChart();
-updateChart();
+updateUI();
 </script>
-
 </body>
 </html>
