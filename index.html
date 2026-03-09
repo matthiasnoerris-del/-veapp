@@ -59,7 +59,6 @@ h1 { text-align: center; margin-top: 10px; margin-bottom: 20px; font-weight: 800
 
 .backup-section { font-size: 10px; text-align: center; color: #8e8e93; margin-top: 20px; padding-bottom: 30px; }
 
-/* MODAL TIL FULD SKÆRM GRAF */
 #fullChartModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index: 200; backdrop-filter: blur(10px); }
 .full-chart-box { background:white; width: 95%; height: 85vh; margin: 5vh auto; padding: 20px; border-radius: 32px; box-sizing: border-box; display: flex; flex-direction: column; }
 
@@ -167,13 +166,15 @@ textarea { height: 80px; resize: none; }
 
     <div class="card">
         <div class="stat-title">Gennemsnit pr. disciplin</div>
-        <div style="font-size: 12px; color: #8e8e93; margin-bottom: 10px;">(Timer pr. uge / Timer pr. session)</div>
+        <div style="font-size: 12px; color: #8e8e93; margin-bottom: 10px;">(Ugentligt gennemsnit baseret på alle uger)</div>
         <div id="disciplineAverages"></div>
     </div>
 
     <div class="card">
         <div class="stat-title">Mest aktive uger</div>
         <div id="activeWeeks"></div>
+        <div id="allWeeks" style="display:none; margin-top: 10px; border-top: 1px solid #f2f2f7;"></div>
+        <button id="toggleWeeksBtn" onclick="toggleAllWeeks()" style="background:none; border:none; color:var(--orgel); font-weight:600; width:100%; padding-top:15px; cursor:pointer; font-size:13px;">Vis alle uger ▼</button>
     </div>
 </div>
 
@@ -227,6 +228,18 @@ function getISOWeek(d) {
     return d.getUTCFullYear() + "-W" + weekNo;
 }
 
+function toggleAllWeeks() {
+    const el = document.getElementById('allWeeks');
+    const btn = document.getElementById('toggleWeeksBtn');
+    if(el.style.display === 'none') {
+        el.style.display = 'block';
+        btn.innerText = 'Skjul uger ▲';
+    } else {
+        el.style.display = 'none';
+        btn.innerText = 'Vis alle uger ▼';
+    }
+}
+
 function renderBalance() {
     if (logs.length === 0) return;
     const now = new Date();
@@ -234,10 +247,12 @@ function renderBalance() {
     sevenDaysAgo.setDate(now.getDate() - 7);
     const weekTotal = logs.filter(l => new Date(l.isoDate) >= sevenDaysAgo).reduce((sum, l) => sum + l.hours, 0);
     document.getElementById('weekTotal').innerText = weekTotal + " timer";
+    
     const uniqueDates = [...new Set(logs.map(l => l.isoDate))].length;
     const totalHours = logs.reduce((sum, l) => sum + l.hours, 0);
     const dailyAvg = (totalHours / uniqueDates).toFixed(1);
     document.getElementById('dailyAvg').innerText = dailyAvg + " timer";
+    
     const priorities = {};
     logs.forEach(l => { priorities[l.instrument] = (priorities[l.instrument] || 0) + l.hours; });
     const sortedPrio = Object.entries(priorities).sort((a,b) => b[1] - a[1]).slice(0, 4);
@@ -247,6 +262,7 @@ function renderBalance() {
         prioHtml += `<div class="balance-item"><span class="balance-rank">${index + 1}.</span><span class="balance-label">${inst}</span><span class="balance-pct">${hours}t (${pct}%)</span></div>`;
     });
     document.getElementById('topPriorities').innerHTML = prioHtml;
+    
     const weekCount = [...new Set(logs.map(l => getISOWeek(new Date(l.isoDate))))].length || 1;
     const insts = ["Orgel", "Trommer", "Klaver", "Hørelære/teori"];
     let avgHtml = "";
@@ -254,18 +270,25 @@ function renderBalance() {
         const instLogs = logs.filter(l => l.instrument === inst);
         const instTotal = instLogs.reduce((sum, l) => sum + l.hours, 0);
         const instAvgWeek = (instTotal / weekCount).toFixed(1);
-        const instAvgSession = instLogs.length ? (instTotal / instLogs.length).toFixed(1) : 0;
-        avgHtml += `<div class="balance-item"><span class="balance-label">${inst}</span><span class="balance-pct">${instAvgWeek}t / uge · ${instAvgSession}t / dag</span></div>`;
+        avgHtml += `<div class="balance-item"><span class="balance-label">${inst}</span><span class="balance-pct">${instAvgWeek}t / uge</span></div>`;
     });
     document.getElementById('disciplineAverages').innerHTML = avgHtml;
+    
     const weeks = {};
     logs.forEach(l => { const w = getISOWeek(new Date(l.isoDate)); weeks[w] = (weeks[w] || 0) + l.hours; });
-    const sortedWeeks = Object.entries(weeks).sort((a,b) => b[1] - a[1]).slice(0, 3);
-    let weekHtml = "";
-    sortedWeeks.forEach(([week, hours]) => {
-        weekHtml += `<div class="balance-item"><span class="balance-label">Uge ${week.split('-W')[1]} (${week.split('-')[0]})</span><span class="balance-pct">${hours} timer</span></div>`;
+    const sortedWeeks = Object.entries(weeks).sort((a,b) => b[1] - a[1]);
+    
+    let top3Html = "";
+    sortedWeeks.slice(0, 3).forEach(([week, hours]) => {
+        top3Html += `<div class="balance-item"><span class="balance-label">Uge ${week.split('-W')[1]} (${week.split('-')[0]})</span><span class="balance-pct">${hours} timer</span></div>`;
     });
-    document.getElementById('activeWeeks').innerHTML = weekHtml;
+    document.getElementById('activeWeeks').innerHTML = top3Html;
+
+    let allWeeksHtml = "";
+    sortedWeeks.forEach(([week, hours]) => {
+        allWeeksHtml += `<div class="balance-item"><span class="balance-label">Uge ${week.split('-W')[1]} (${week.split('-')[0]})</span><span class="balance-pct">${hours} timer</span></div>`;
+    });
+    document.getElementById('allWeeks').innerHTML = allWeeksHtml;
 }
 
 function setDuration(val) {
@@ -378,7 +401,6 @@ function renderMaterials() {
     });
 }
 
-// GRAF LOGIK
 function getChartConfig(numDays) {
     let latestDate = new Date();
     let daysToFetch = numDays;
@@ -431,7 +453,7 @@ function updateUI() {
             responsive: true, 
             maintainAspectRatio: false, 
             scales: { 
-                y: { beginAtZero: true, ticks: { stepSize: 1 } } 
+                y: { beginAtZero: true, max: 6, ticks: { stepSize: 1 } } 
             },
             plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10 } } } }
         }
@@ -448,7 +470,7 @@ function openFullChart() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true } },
+            scales: { y: { beginAtZero: true, max: 6, ticks: { stepSize: 1 } } },
             plugins: { legend: { position: 'bottom' } }
         }
     });
